@@ -1,0 +1,14 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.log
+
+# Virtual environment (if you ever create one here)
+.venv/
+
+# dotenv secrets
+.env
+
+# Data & models (if you regenerate them elsewhere)
+*.csv
+*.joblib
