@@ -1,24 +1,36 @@
-from twelvedata import TDClient
+from dotenv import load_dotenv
 import os
 import time
 import pandas as pd
+from twelvedata import TDClient
 
-# 1) Configure client 
-td = TDClient(apikey=os.getenv("TWELVE_DATA_API_KEY", "c3c0a312b1674ab5a9bd0c7e6e39e1fa"))
+# 0) Load .env into the environment
+load_dotenv()  
 
-# 2) Request 15 min candles for SPY
+# 1) Retrieve the key and validate
+api_key = os.getenv("TWELVE_DATA_API_KEY")
+if not api_key:
+    raise RuntimeError("TWELVE_DATA_API_KEY not set. Please ensure you have a .env file with that variable.")
+
+# 2) Configure the Twelve Data client
+td = TDClient(apikey=api_key)
+
+# 3) Request 15-minute candles for SPY
 spy_candles = td.time_series(
-    symbol = 'SPY',
-    interval = '15min',
-    outputsize = '5000'
+    symbol="SPY",
+    interval="15min",
+    outputsize="5000"
 )
 
-# 3) Convert output to dataframe
+# 4) Convert the output to a DataFrame
 df = spy_candles.as_pandas()
 df.index = pd.to_datetime(df.index)
-df_columns = ["open", "high", "low", "close", "volume"]
 
-output_path = "/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/data/spy_15min.csv"
+# 5) Persist to CSV
+output_path = os.getenv(
+    "SPY_DATA_PATH",
+    "/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/data/spy_15min.csv"
+)
 df.to_csv(output_path, index=True)
 
-
+print(f"Wrote {len(df)} rows to {output_path}")
