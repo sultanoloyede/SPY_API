@@ -122,10 +122,7 @@ def rsi(df):
 
     return df
 
-raw_csv = "/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/data/spy_15min.csv"
-output_csv = "/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/data/processed_spy_15min.csv"
-
-df = pd.read_csv(raw_csv)
+df = pd.read_csv("../data/spy_15min.csv")
 df['datetime'] = pd.to_datetime(df['datetime'])
 
 df = above_below_prev_day_close(df)
@@ -136,7 +133,7 @@ df = big_move_counter(df)
 df = rsi(df)
 
 # 9. Save the result
-df.to_csv(output_csv, index=False)
+df.to_csv("../data/processed_spy_15min.csv", index=True)
 print(df.head())
 
 

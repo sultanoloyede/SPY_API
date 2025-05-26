@@ -4,9 +4,13 @@ import joblib
 import pandas as pd
 import os
 
+# Make sure the “models” directory exists
+os.makedirs("../models", exist_ok=True)
+os.makedirs("../data", exist_ok=True)
+
 # Config (adjust paths or use env vars)
-MODEL_PATH      = "/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/models/spy_drop_predictor.joblib"
-DATA_CSV_PATH   = "/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/data/processed_spy_15min.csv"
+MODEL_PATH      = "../models/spy_drop_predictor.joblib"
+DATA_CSV_PATH   = "../data/processed_spy_15min.csv"
 THRESHOLD       = 0.10
 
 # Load model

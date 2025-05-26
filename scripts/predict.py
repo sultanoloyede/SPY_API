@@ -1,11 +1,16 @@
 import joblib
 import pandas as pd
+import os
+
+# 1) Make sure the “models” directory exists
+os.makedirs("../models", exist_ok=True)
+os.makedirs("../data", exist_ok=True)
 
 # 1) Load the saved model
-model = joblib.load("/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/models/spy_drop_predictor.joblib")
+model = joblib.load("../models/spy_drop_predictor.joblib")
 
 # 2) Load or receive new intraday data
-df = pd.read_csv("/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/data/processed_spy_15min.csv", parse_dates=["datetime"])
+df = pd.read_csv("../data/processed_spy_15min.csv", parse_dates=["datetime"])
 
 # 3) Prepare your feature set for a given row index `idx`
 features = [

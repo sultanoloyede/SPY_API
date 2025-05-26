@@ -13,9 +13,9 @@ load_dotenv()
 API_KEY = os.getenv("TWELVE_DATA_API_KEY")
 if not API_KEY:
     raise RuntimeError("TWELVE_DATA_API_KEY not set. Please ensure you have a .env file with that variable.")
-RAW_CSV_PATH = "spy_15min_raw.csv"
-PROCESSED_CSV_PATH = "spy_15min_processed.csv"
-MODEL_PATH = "spy_drop_predictor.joblib"
+RAW_CSV_PATH = "../data/spy_15min_raw.csv"
+PROCESSED_CSV_PATH = "../data/spy_15min_processed.csv"
+MODEL_PATH = "../models/spy_drop_predictor.joblib"
 FETCH_INTERVAL_SEC = 15 * 60  # fetch & run every 15 minutes
 
 # === Helper Functions ===

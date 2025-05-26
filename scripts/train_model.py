@@ -2,12 +2,13 @@ import pandas as pd
 from xgboost import XGBClassifier
 from sklearn.metrics import classification_report, precision_recall_fscore_support
 import joblib
+import os
+
+# 1) Make sure the “models” directory exists
+os.makedirs("../models", exist_ok=True)
 
 # 1) Load & prepare data
-df = pd.read_csv(
-    '/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/data/processed_spy_15min.csv',
-    parse_dates=['datetime']
-)
+df = pd.read_csv('../data/processed_spy_15min.csv', parse_dates=['datetime'])
 df['target'] = df['0.25_decrement'].shift(-1)
 df = df.dropna(subset=['target'])
 
@@ -55,6 +56,6 @@ p1, r1, f11, _ = precision_recall_fscore_support(
 )
 print(f"Drop-class metrics → Precision: {p1:.4f}, Recall: {r1:.4f}, F1: {f11:.4f}")
 
-model_path = "/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/models/spy_drop_predictor.joblib"
+model_path = "../models/spy_drop_predictor.joblib"
 joblib.dump(model, model_path)
 print(f"Model saved to: {model_path}")

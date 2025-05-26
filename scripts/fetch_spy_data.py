@@ -3,6 +3,10 @@ import os
 import time
 import pandas as pd
 from twelvedata import TDClient
+from pathlib import Path
+
+# 1) Make sure the data folder exists (once at top of script)
+os.makedirs("../data", exist_ok=True)
 
 # 0) Load .env into the environment
 load_dotenv()  
@@ -26,11 +30,5 @@ spy_candles = td.time_series(
 df = spy_candles.as_pandas()
 df.index = pd.to_datetime(df.index)
 
-# 5) Persist to CSV
-output_path = os.getenv(
-    "SPY_DATA_PATH",
-    "/Users/bolajioloyede/Documents/FQ_Predictor/nba_betting_env/intraday/data/spy_15min.csv"
-)
-df.to_csv(output_path, index=True)
-
-print(f"Wrote {len(df)} rows to {output_path}")
+# 5) Save to CSV
+df.to_csv("../data/spy_15min.csv", index=True)
