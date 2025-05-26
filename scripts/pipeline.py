@@ -4,9 +4,15 @@ import joblib
 from twelvedata import TDClient
 from xgboost import XGBClassifier
 from sklearn.metrics import classification_report
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # === Configuration ===
-API_KEY = "c3c0a312b1674ab5a9bd0c7e6e39e1fa"
+API_KEY = os.getenv("TWELVE_DATA_API_KEY")
+if not API_KEY:
+    raise RuntimeError("TWELVE_DATA_API_KEY not set. Please ensure you have a .env file with that variable.")
 RAW_CSV_PATH = "spy_15min_raw.csv"
 PROCESSED_CSV_PATH = "spy_15min_processed.csv"
 MODEL_PATH = "spy_drop_predictor.joblib"
