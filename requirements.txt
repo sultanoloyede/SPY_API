@@ -1,0 +1,5 @@
+ibapi
+pandas
+numpy
+matplotlib
+python-dotenv
