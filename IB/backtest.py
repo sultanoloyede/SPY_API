@@ -11,7 +11,7 @@ class IBApi(EWrapper, EClient):
         self.bot_callback = bot_callback
 
     def realtimeBar(self, reqId, barTime, open_, high, low, close, volume, wap, count):
-        self.on_bar_update(reqId, barTime, open_, high, low, close, volume, wap, count)
+        bot.on_bar_update(reqId, barTime, open_, high, low, close, volume, wap, count)
 
 
 # Bot Logic
@@ -31,21 +31,22 @@ class Bot:
         time.sleep(1)
 
         # Get symbol from user
-        symbol = input("Enter the symbol you want to trade: ")
+        symbol = input("Enter the base currency (e.g., EUR for EUR/USD): ").upper()
+        quote = input("Enter the quote currency (e.g., USD for EUR/USD): ").upper()
 
         # Create contract
         contract = Contract()
-        contract.secType = "STK"
-        contract.symbol = symbol.upper()
-        contract.exchange = "SMART"
-        contract.currency = "USD"
+        contract.secType = "CASH"
+        contract.symbol = symbol
+        contract.exchange = "IDEALPRO"
+        contract.currency = quote
 
         # Request real-time bars
         self.ib.reqRealTimeBars(
             reqId=0,
             contract=contract,
             barSize=5,             # 5 seconds
-            whatToShow="TRADES",
+            whatToShow="MIDPOINT", # For Forex, use "MIDPOINT"
             useRTH=0,              # Set to 1 for Regular Trading Hours only
             realTimeBarsOptions=[]
         )
@@ -53,7 +54,7 @@ class Bot:
     def run_loop(self):
         self.ib.run()
 
-    def on_bar_update(reqId, barTime, open_, high, low, close, volume, wap, count):
+    def on_bar_update(self, reqId, barTime, open_, high, low, close, volume, wap, count):
         print(f"[RealTimeBar] Time: {barTime}, Open: {open_}, High: {high}, Low: {low}, Close: {close}, Vol: {volume}, WAP: {wap}, Count: {count}")
 
 
