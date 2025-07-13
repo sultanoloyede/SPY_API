@@ -3,3 +3,4 @@ pandas
 numpy
 matplotlib
 python-dotenv
+ta-py
