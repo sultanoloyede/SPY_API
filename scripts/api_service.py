@@ -35,7 +35,7 @@ def predict():
     feature_cols = [
         "open","high","low","close","volume",
         "close_v_fst_close","above_200_ema","move_percentage",
-        "0.25_growth","big_move_counter","RSI_above_60"
+        "0.25_growth","0.25_decrement","big_move_counter","RSI_above_60"
     ]
 
     if df.empty or any(c not in df.columns for c in feature_cols):

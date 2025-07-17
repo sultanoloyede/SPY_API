@@ -16,9 +16,9 @@ df = pd.read_csv("../data/processed_spy_15min.csv", parse_dates=["datetime"])
 features = [
     "open","high","low","close","volume",
     "close_v_fst_close","above_200_ema","move_percentage",
-    "0.25_growth","big_move_counter","RSI_above_60"
+    "0.25_growth","0.25_decrement","big_move_counter","RSI_above_60"
 ]
-row = df.loc[5000-1, features].values.reshape(1, -1)
+row = df.loc[5000-361, features].values.reshape(1, -1)
 print(row)
 
 # 4) Make a probability prediction and apply your threshold

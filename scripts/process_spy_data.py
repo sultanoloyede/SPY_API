@@ -81,11 +81,11 @@ def big_move_counter(df):
     df = df.sort_values('datetime')
     # 2) Check if we have a big drop -> value equal to/less than 0.25
     df['0.25_decrement'] = (df['move_percentage'] <= -0.25).astype(int)
-    # 3)
+    # 3) Create a date column which will help with grouping later
     df['date'] = df['datetime'].dt.date
-    # 4) 
+    # 4) Create a big move column that will track if a big move happened in that candlestick
     df['big_move'] = df['0.25_growth'] - df['0.25_decrement']
-    # 5)
+    # 5) Cummulative sum big moves that happened up until the current candlestick within the day
     df['big_move_counter'] = (
         df.groupby('date')['big_move']
         .cumsum()

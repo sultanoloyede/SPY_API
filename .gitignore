@@ -19,7 +19,6 @@ env/
 
 # dotenv secrets
 .env
-Codes.rtf
 
 # Data & models (if you regenerate them elsewhere)
 *.csv
