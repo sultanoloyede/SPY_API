@@ -151,11 +151,11 @@ class Bot:
             print(f"bar.close: {bar.close}, SMA[-1]: {sma.iloc[-1]}")
             print(f"lastClose: {lastClose}, SMA[-2]: {sma.iloc[-2]}")
             print("SMA: " + str(sma.iloc[-1]))
-
-            if (bar.close > lastHigh and
-                self.currentBar.low > lastLow and
+            condition = (bar.close > lastHigh and
+                bar.low > lastLow and
                 bar.close > sma.iloc[-1] and
-                lastClose < sma.iloc[-2]):
+                lastClose < sma.iloc[-2])
+            if (condition):
 
                 profitTarget = bar.close * 1.02
                 stopLoss = bar.close * 0.99
