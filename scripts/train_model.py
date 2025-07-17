@@ -9,7 +9,7 @@ os.makedirs("../models", exist_ok=True)
 
 # 1) Load & prepare data
 df = pd.read_csv('../data/processed_spy_15min.csv', parse_dates=['datetime'])
-df['target'] = df['0.25_decrement'].shift(-1)
+df['target'] = df['0.25_decrement'].shift(-1, fill_value=0)
 df = df.dropna(subset=['target'])
 
 # 2) Train/test split
@@ -27,7 +27,7 @@ print(f"scale_pos_weight = {scale_pos_weight:.2f}  (neg={n_neg}, pos={n_pos})\n"
 features = [
     "open","high","low","close","volume",
     "close_v_fst_close","above_200_ema","move_percentage",
-    "0.25_growth","big_move_counter","RSI_above_60"
+    "0.25_growth","0.25_decrement","big_move_counter","RSI_above_60"
 ]
 X_train = train[features];  y_train = train['target'].astype(int)
 X_test  = test[features];   y_test  = test['target'].astype(int)
