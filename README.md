@@ -4,4 +4,7 @@ A machine learning pipeline that forecasts major drops on the 15 minute timefram
 
 ## Interactive Brokers (IB) API
 
-Downloads: [Trader Work Station](https://www.interactivebrokers.ca/en/trading/tws-updateable-stable.php) (GUI where you can see your positions)
+Downloads:
+- [Trader Work Station](https://www.interactivebrokers.ca/en/trading/tws-updateable-stable.php) (GUI where you can see your positions)
+
+- Python 3.8.8
