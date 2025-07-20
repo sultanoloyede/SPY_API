@@ -4,12 +4,11 @@ from typing import Tuple
 import queue
 
 class Strategy(ABC, Thread):
+    """
+    Abstract defintion for a strategy observer class.
+    Sets up a thread-safe queue for data communication and an event to signal stopping the strategy.
+    """
     def __init__(self):
-        """
-        Abstract defintion for a strategy observer class.
-        Sets up a thread-safe queue for data communication and an event to signal stopping the strategy.
-        """
-
         super().__init__()
         self.data_queue = queue.Queue()  # Thread-safe queue
         self.stop_event = Event()

@@ -9,7 +9,8 @@ from ibapi.wrapper import EWrapper # Wrapper handles callbacks from TWS
 from ibapi.contract import Contract
 from ibapi.order import Order
 from ibapi.common import BarData
-from strategy import Strategy
+from strategies.strategy import Strategy
+from strategies.mean_reversion import MeanReversionStrategy
 
 
 class IBApi(EWrapper, EClient):
@@ -105,6 +106,7 @@ class IBApi(EWrapper, EClient):
     # Callback for once live streamed data has been completed
     def historicalDataEnd(self, reqId, start, end):
         self.data_ready.set() 
+        self.notify_all(self.data[reqId])
 
 
 if __name__ == "__main__":
@@ -113,6 +115,9 @@ if __name__ == "__main__":
     threading.Thread(target=ib.run, daemon=True).start()
 
     usd_cad_contract = IBApi.get_forex_contract("USD", "CAD")
+    mrs = MeanReversionStrategy()
+    
+    ib.register(mrs)
 
     data = ib.initialize_data(99, usd_cad_contract)
     print(data)
