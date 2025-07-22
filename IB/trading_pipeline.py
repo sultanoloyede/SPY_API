@@ -51,7 +51,7 @@ class IBApi(EWrapper, EClient):
         self.data_ready:threading.Event = threading.Event()
 
     # Error method, called whenever an error occurs within IB
-    def error(self, reqId: int, errorCode: int, errorString: str, advanced: any) -> None:
+    def error(self, reqId: int, errorCode: int, errorString: str, advanced: any=None) -> None:
         print(f"Error: {reqId}, Code: {errorCode}, Msg: {errorString}")
     
     # Gathers historical data 1 day of 1 minute bars ending now
