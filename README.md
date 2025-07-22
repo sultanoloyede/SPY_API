@@ -8,3 +8,5 @@ Downloads:
 - [Trader Work Station](https://www.interactivebrokers.ca/en/trading/tws-updateable-stable.php) (GUI where you can see your positions)
 
 - Python 3.8.8
+
+- Latest [IBApi version](https://interactivebrokers.github.io/downloads/TWS%20API%20Install%201030.01.msi) 
