@@ -4,11 +4,15 @@ from datetime import datetime
 from typing import Dict, Optional
 import pandas as pd
 
-from ibapi.client import EClient # Client sends information to TWS
-from ibapi.wrapper import EWrapper # Wrapper handles callbacks from TWS
-from ibapi.contract import Contract
-from ibapi.order import Order
-from ibapi.common import BarData
+try:
+    from ibapi.client import EClient # Client sends information to TWS
+    from ibapi.wrapper import EWrapper # Wrapper handles callbacks from TWS
+    from ibapi.contract import Contract
+    from ibapi.order import Order
+    from ibapi.common import BarData
+except ModuleNotFoundError as error:
+    print("Ensure that IB Api was downloaded using the latest release found on the github and then downloaded using pip.")
+    raise
 from strategies.strategy import Strategy
 from strategies.mean_reversion import MeanReversionStrategy
 
@@ -83,7 +87,7 @@ class IBApi(EWrapper, EClient):
     def historicalData(self, reqId:int, bar:BarData) -> None:
         df = self.data[reqId]
         df.loc[
-            pd.to_datetime(bar.date, unit="s"),
+            pd.to_datetime(int(bar.date), unit="s"),
             ["high", "low", "close"]
         ] = [bar.high, bar.low, bar.close]
         df = df.astype(float)
@@ -92,7 +96,7 @@ class IBApi(EWrapper, EClient):
     # Callback for live updating data
     def historicalDataUpdate(self, reqId: int, bar: BarData) -> None:
         df = self.data[reqId]
-        timestamp = pd.to_datetime(bar.date, unit="s")
+        timestamp = pd.to_datetime(int(bar.date), unit="s")
 
         # Update last row
         if timestamp in df.index:
@@ -120,4 +124,3 @@ if __name__ == "__main__":
     ib.register(mrs)
 
     data = ib.initialize_data(99, usd_cad_contract)
-    print(data)
