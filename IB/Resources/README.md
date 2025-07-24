@@ -1,4 +1,2 @@
-HEAD
-📃 **[](Enhancing Trading Performance Through Sentiment Analysis)**  
-This study integrates real‑time sentiment analysis using GPT‑2 and FinBERT with traditional technical indicators (like MACD, SAR, VW MACD) and time‑series forecasting models (e.g., ARIMA, ETS) to enhance trading strategies on the S&P 500. The combined sentiment‑driven and technical approach significantly outperforms a benchmark buy‑and‑hold strategy—delivering the top return of ~5.77%—and demonstrates more adaptive performance in volatile markets
-
+📃 **(Enhancing Trading Performance Through Sentiment Analysis)**  
+This study integrates real‑time sentiment analysis using GPT‑2 and FinBERT with traditional technical indicators (like MACD, SAR, VW MACD) and time‑series forecasting models (e.g., ARIMA, ETS) to enhance trading strategies on the S&P 500. The combined sentiment‑driven and technical approach significantly outperforms a benchmark buy‑and‑hold strategy—delivering the top return of ~5.77%—and demonstrates more adaptive performance in volatile markets.
