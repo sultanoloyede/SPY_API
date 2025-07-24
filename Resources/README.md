@@ -1,0 +1,2 @@
+📃 **[EV Power Management Research](https://arxiv.org/pdf/2507.09739)**  
+Developed adaptive energy management controllers for electric vehicles using MATLAB, Simulink, and CarSim to optimize power consumption under varying and uncertain road conditions. Implemented advanced control strategies such as Linear Quadratic Regulator (LQR) to improve traction, stability, and energy efficiency. 
