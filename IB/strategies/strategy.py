@@ -13,6 +13,7 @@ class Strategy(ABC, Thread):
         self.data_queue = queue.Queue()  # Thread-safe queue
         self.stop_event = Event()
 
+
     def on_new_data(self, data):
         self.data_queue.put(data)
 
