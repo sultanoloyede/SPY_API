@@ -7,7 +7,7 @@ class Fuser(ABC):
         self.strategies = strategies
 
     @abstractmethod
-    def predict_price(self):
+    def predict(self):
         """
         Calls evaluate on all strategies and fuses their outputs.
         """
