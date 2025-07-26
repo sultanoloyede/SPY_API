@@ -12,6 +12,8 @@ class Strategy(ABC, Thread):
         super().__init__()
         self.data_queue = queue.Queue()  # Thread-safe queue
         self.stop_event = Event()
+        self.price_estimate: float = None
+        self.price_std:float = None
 
     def on_new_data(self, data):
         self.data_queue.put(data)
@@ -24,8 +26,8 @@ class Strategy(ABC, Thread):
         while not self.stop_event.is_set():
             try:
                 data = self.data_queue.get(timeout=1)
-                estimation, std = self.evaluate(data)
-                print(f"{self.__class__.__name__} => Est: {estimation}, Std: {std}")
+                self.price_estimate, self.price_std = self.evaluate(data)
+                print(f"{self.__class__.__name__} => Est: {self.price_estimate}, Std: {self.price_std}")
             except queue.Empty:
                 continue
 

@@ -53,6 +53,7 @@ class IBApi(EWrapper, EClient):
         self.data: Dict[int, pd.DataFrame] = {} # Pandas dataframe containing the live updating bar timeseries
         self.strategies:list[Strategy] = [] # List containing all the registered strategies
         self.data_ready:threading.Event = threading.Event()
+        self.price_prediction: int = None
 
     # Error method, called whenever an error occurs within IB
     def error(self, reqId: int, errorCode: int, errorString: str, advanced: any=None) -> None:
@@ -92,6 +93,8 @@ class IBApi(EWrapper, EClient):
         ] = [bar.high, bar.low, bar.close]
         df = df.astype(float)
         self.data[reqId] = df
+        self.data_ready.set() 
+        self.notify_all(self.data[reqId])
 
     # Callback for live updating data
     def historicalDataUpdate(self, reqId: int, bar: BarData) -> None:
@@ -108,7 +111,7 @@ class IBApi(EWrapper, EClient):
         self.data[reqId] = df
     
     # Callback for once live streamed data has been completed
-    def historicalDataEnd(self, reqId, start, end):
+    def historicalDataEnd(self, reqId: int, start: str, end: str) -> None:
         self.data_ready.set() 
         self.notify_all(self.data[reqId])
 
