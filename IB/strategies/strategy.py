@@ -15,6 +15,7 @@ class Strategy(ABC, Thread):
         self.price_estimate: float = None
         self.price_std:float = None
 
+
     def on_new_data(self, data):
         self.data_queue.put(data)
 
