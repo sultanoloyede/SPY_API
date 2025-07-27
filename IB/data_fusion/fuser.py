@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
-from IB.strategies.strategy import Strategy
+from strategies.strategy import Strategy
 
 class Fuser(ABC):
     def __init__(self, strategies: List[Strategy]):

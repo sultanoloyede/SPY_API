@@ -29,7 +29,7 @@ class MovingAverageCrossoverStrategy(Strategy):
 
     def evaluate(self, data: pd.DataFrame) -> Tuple[float, float]:
         data = self.calculate_indicators(data)
-        data = data.groupby("group").apply(self.assign_turning_point).reset_index(drop=True)
+        data = data.groupby("group", group_keys=True).apply(self.assign_turning_point).reset_index(drop=True)
 
         is_first_in_group = (data["trend"] != data["trend"].shift())
         first_rows = data[is_first_in_group]
@@ -46,56 +46,8 @@ class MovingAverageCrossoverStrategy(Strategy):
         current_trend = data["trend"].iloc[-1]
 
         if current_trend == 1:
-            price_target = current_price * (1 + avg_upturn / 100)
-            price_deviation = price_target * (std_upturn / 100)
+            self.price_estimate = current_price * (1 + avg_upturn / 100)
+            self.price_std = self.price_estimate * (std_upturn / 100)
         else:
-            price_target = current_price * (1 - abs(avg_downturn) / 100)
-            price_deviation = price_target * (std_downturn / 100)
-
-        return price_target, price_deviation
-
-    def generate_signal(self, data: pd.DataFrame) -> str:
-        data = self.calculate_indicators(data)
-        if len(data) < 200:
-            return "HOLD"
-
-        ma50 = data["moving_avg_50"].iloc[-1]
-        ma200 = data["moving_avg_200"].iloc[-1]
-        prev_ma50 = data["moving_avg_50"].iloc[-2]
-        prev_ma200 = data["moving_avg_200"].iloc[-2]
-
-        if prev_ma50 < prev_ma200 and ma50 > ma200:
-            return "BUY"
-        elif prev_ma50 > prev_ma200 and ma50 < ma200:
-            return "SELL"
-        return "HOLD"
-
-    def on_new_data(self, data: pd.DataFrame):
-        signal = self.generate_signal(data)
-        price_target, price_deviation = self.evaluate(data)
-
-        if signal == "BUY":
-            print(f"Signal: BUY — Target: {price_target:.4f} ± {price_deviation:.4f}")
-            orders = self.ib.bracketOrder(
-                parentOrderId=self.order_id,
-                action="BUY",
-                quantity=100,
-                profitTarget=price_target,
-                stopLoss=price_target - price_deviation
-            )
-            for o in orders:
-                self.ib.placeOrder(o.orderId, self.contract, o)
-            self.order_id += 3
-
-        elif signal == "SELL":
-            print(f"Signal: SELL — Target: {price_target:.4f} ± {price_deviation:.4f}")
-            orders = self.ib.bracketOrder(
-                parentOrderId=self.order_id,
-                action="SELL",
-                quantity=100,
-                profitTarget=price_target,
-                stopLoss=price_target + price_deviation
-            )
-            for o in orders:
-                self.ib.placeOrder(o.orderId, self.contract, o)
-            self.order_id += 3
+            self.price_estimate = current_price * (1 - abs(avg_downturn) / 100)
+            self.price_std = self.price_estimate * (std_downturn / 100)

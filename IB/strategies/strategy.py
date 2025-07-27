@@ -3,6 +3,8 @@ from threading import Thread, Event
 from typing import Tuple
 import queue
 
+from utils.logger import logger
+
 class Strategy(ABC, Thread):
     """
     Abstract defintion for a strategy observer class.
@@ -12,23 +14,23 @@ class Strategy(ABC, Thread):
         super().__init__()
         self.data_queue = queue.Queue()  # Thread-safe queue
         self.stop_event = Event()
-        self.price_estimate: float = None
-        self.price_std:float = None
+        self.price_estimate: float = 0
+        self.price_std:float = 0
 
 
     def on_new_data(self, data):
         self.data_queue.put(data)
 
     @abstractmethod
-    def evaluate(self, data) -> Tuple[float, float]:
+    def evaluate(self, data) -> None:
         pass
 
     def run(self):
         while not self.stop_event.is_set():
             try:
                 data = self.data_queue.get(timeout=1)
-                self.price_estimate, self.price_std = self.evaluate(data)
-                print(f"{self.__class__.__name__} => Est: {self.price_estimate}, Std: {self.price_std}")
+                self.evaluate(data)
+                logger.info(f"{self.__class__.__name__} => Est: {self.price_estimate}, Std: {self.price_std}")
             except queue.Empty:
                 continue
 

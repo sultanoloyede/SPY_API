@@ -3,6 +3,7 @@ import threading
 from datetime import datetime
 from typing import Dict, Optional
 import pandas as pd
+from utils.logger import logger
 
 try:
     from ibapi.client import EClient # Client sends information to TWS
@@ -11,13 +12,18 @@ try:
     from ibapi.order import Order
     from ibapi.common import BarData
 except ModuleNotFoundError as error:
-    print("Ensure that IB Api was downloaded using the latest release found on the github and then downloaded using pip.")
+    logger.error("Ensure that IB Api was downloaded using the latest release found on the github and then downloaded using pip.")
     raise
 from strategies.strategy import Strategy
 from strategies.mean_reversion import MeanReversionStrategy
+from strategies.moving_average_crossover import MovingAverageCrossoverStrategy
+
+from data_fusion.kalman_filter import KalmanFilter
+
+from utils.config import MARKET_ENTRY_THRESHOLD
 
 
-class IBApi(EWrapper, EClient):
+class IBApi(EWrapper, EClient, KalmanFilter):
     """
     IBApi is a strategy manager class that integrates with the Interactive Brokers (IB) API using a publisher-observer architecture. 
     It inherits from both EWrapper and EClient to handle both client requests and server responses.
@@ -34,9 +40,13 @@ class IBApi(EWrapper, EClient):
         strategy.join()
         self.strategies.remove(strategy)
 
-    def notify_all(self, data):
+    def notify_all(self, data, reqId):
         for strategy in self.strategies:
             strategy.on_new_data(data)
+            strategy.join()
+        self.predict()
+        logger.info(f"Current Price Estimation: {self.price_estimate}$, Standard Deviation: {self.price_std}")
+        self.compute_market_signal(reqId)
 
     #-----------------#IBApi Definitions#-----------------#
     @staticmethod
@@ -49,15 +59,15 @@ class IBApi(EWrapper, EClient):
         return contract
     
     def __init__(self):
-        EClient.__init__(self, self)
+        EClient.__init__(self, self)    
         self.data: Dict[int, pd.DataFrame] = {} # Pandas dataframe containing the live updating bar timeseries
         self.strategies:list[Strategy] = [] # List containing all the registered strategies
+        KalmanFilter.__init__(self, self.strategies)
         self.data_ready:threading.Event = threading.Event()
-        self.price_prediction: int = None
 
     # Error method, called whenever an error occurs within IB
     def error(self, reqId: int, errorCode: int, errorString: str, advanced: any=None) -> None:
-        print(f"Error: {reqId}, Code: {errorCode}, Msg: {errorString}")
+        logger.error(f"Request ID: {reqId}, Code: {errorCode}, Msg: {errorString}")
     
     # Gathers historical data 1 day of 1 minute bars ending now
     #NOTE: This method calls uses the client to request historical data. The result needs to 
@@ -72,7 +82,7 @@ class IBApi(EWrapper, EClient):
             reqId=reqId,
             contract=contract,
             endDateTime='',
-            durationStr='1 D', # Ask for past data for 1 Day
+            durationStr='3 D', # Ask for past data for 1 Day
             barSizeSetting='1 min', # Ask for 1 minute bar data interval
             whatToShow='MIDPOINT',
             useRTH=0,
@@ -94,7 +104,7 @@ class IBApi(EWrapper, EClient):
         df = df.astype(float)
         self.data[reqId] = df
         self.data_ready.set() 
-        self.notify_all(self.data[reqId])
+        self.notify_all(self.data[reqId], reqId)
 
     # Callback for live updating data
     def historicalDataUpdate(self, reqId: int, bar: BarData) -> None:
@@ -113,7 +123,10 @@ class IBApi(EWrapper, EClient):
     # Callback for once live streamed data has been completed
     def historicalDataEnd(self, reqId: int, start: str, end: str) -> None:
         self.data_ready.set() 
-        self.notify_all(self.data[reqId])
+        self.notify_all(self.data[reqId], reqId)
+    
+    def get_most_recent_price(self, reqId):
+        return self.get_most_recent_price(reqId).iloc[-1]['close']
 
     # Creates a bracket order with a market entry, profit target, and stop loss
     def bracketOrder(self, parentOrderId, action, quantity, profitTarget, stopLoss):
@@ -141,17 +154,48 @@ class IBApi(EWrapper, EClient):
         stopLossOrder.transmit = True
 
         return [parentOrder, profitOrder, stopLossOrder]
+    
+    def compute_market_signal(self, reqId):
 
+        # Buy Condition
+        if self.get_most_recent_price(reqId) + MARKET_ENTRY_THRESHOLD < self.price_estimate:
+            logger.info("Signal: BUY - submitting bracket order")
+            # Initializing order object
+            orders = ib.bracketOrder(
+                parentOrderId=self.order_id,
+                action="BUY",
+                quantity=100,
+                profitTarget=1.17760,
+                stopLoss=1.17700
+            )
+            for o in orders:
+                ib.placeOrder(o.orderId, self.contract, o)
+            self.order_id += 3
 
+        elif self.get_most_recent_price(reqId) - MARKET_ENTRY_THRESHOLD > self.price_estimate:
+            logger.info("Signal: SELL - submitting bracket order")
+            # Initializing order object
+            orders = ib.bracketOrder(
+                parentOrderId=self.order_id,
+                action="SELL",
+                quantity=100,
+                profitTarget=1.17700,
+                stopLoss=1.17760
+            )
+            for o in orders:
+                ib.placeOrder(o.orderId, self.contract, o)
+            self.order_id += 3 # Order ID increment
 
 if __name__ == "__main__":
     ib = IBApi()
-    ib.connect("127.0.0.1", 7497, clientId=1)
-    threading.Thread(target=ib.run, daemon=True).start()
 
     eur_usd_contract = IBApi.get_forex_contract("EUR", "USD")
     mrs = MeanReversionStrategy(ib, eur_usd_contract)
-    
-    ib.register(mrs)
+    mac = MovingAverageCrossoverStrategy(ib, eur_usd_contract)
 
+    ib.register(mrs)
+    ib.register(mac)
+
+    ib.connect("127.0.0.1", 7497, clientId=1)
+    threading.Thread(target=ib.run, daemon=True).start()
     data = ib.initialize_data(99, eur_usd_contract)

@@ -1,0 +1,2 @@
+MARKET_ENTRY_THRESHOLD = 0.02 # Percentage difference
+INIT_VARIANCE = 10000
