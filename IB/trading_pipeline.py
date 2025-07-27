@@ -43,7 +43,6 @@ class IBApi(EWrapper, EClient, KalmanFilter):
     def notify_all(self, data, reqId):
         for strategy in self.strategies:
             strategy.on_new_data(data)
-            strategy.join()
         self.predict()
         logger.info(f"Current Price Estimation: {self.price_estimate}$, Standard Deviation: {self.price_std}")
         self.compute_market_signal(reqId)
@@ -64,15 +63,16 @@ class IBApi(EWrapper, EClient, KalmanFilter):
         self.strategies:list[Strategy] = [] # List containing all the registered strategies
         KalmanFilter.__init__(self, self.strategies)
         self.data_ready:threading.Event = threading.Event()
+        self.contract:Contract = None
 
     # Error method, called whenever an error occurs within IB
     def error(self, reqId: int, errorCode: int, errorString: str, advanced: any=None) -> None:
         logger.error(f"Request ID: {reqId}, Code: {errorCode}, Msg: {errorString}")
     
     # Gathers historical data 1 day of 1 minute bars ending now
-    #NOTE: This method calls uses the client to request historical data. The result needs to 
+    #NOTE: This method calls the client to request historical data. The result needs to 
     #      be processed with the wrapper and the historicalData callback 
-    def initialize_data(self, reqId:int, contract:Contract) ->pd.DataFrame:
+    def initialize_data(self, reqId:int, contract:Contract) -> pd.DataFrame:
         self.data[reqId] = pd.DataFrame(columns=["time", "high", "low", "close"])
         self.data[reqId].set_index("time", inplace=True)
 
@@ -82,7 +82,7 @@ class IBApi(EWrapper, EClient, KalmanFilter):
             reqId=reqId,
             contract=contract,
             endDateTime='',
-            durationStr='3 D', # Ask for past data for 1 Day
+            durationStr='1 D', # Ask for past data for 1 Day
             barSizeSetting='1 min', # Ask for 1 minute bar data interval
             whatToShow='MIDPOINT',
             useRTH=0,
@@ -119,6 +119,8 @@ class IBApi(EWrapper, EClient, KalmanFilter):
 
         df = df.astype(float)
         self.data[reqId] = df
+        self.data_ready.set() 
+        self.notify_all(self.data[reqId], reqId)
     
     # Callback for once live streamed data has been completed
     def historicalDataEnd(self, reqId: int, start: str, end: str) -> None:
@@ -126,7 +128,7 @@ class IBApi(EWrapper, EClient, KalmanFilter):
         self.notify_all(self.data[reqId], reqId)
     
     def get_most_recent_price(self, reqId):
-        return self.get_most_recent_price(reqId).iloc[-1]['close']
+        return self.data[reqId].iloc[-1]['close']
 
     # Creates a bracket order with a market entry, profit target, and stop loss
     def bracketOrder(self, parentOrderId, action, quantity, profitTarget, stopLoss):
@@ -162,21 +164,21 @@ class IBApi(EWrapper, EClient, KalmanFilter):
             logger.info("Signal: BUY - submitting bracket order")
             # Initializing order object
             orders = ib.bracketOrder(
-                parentOrderId=self.order_id,
+                parentOrderId=reqId,
                 action="BUY",
                 quantity=100,
                 profitTarget=1.17760,
                 stopLoss=1.17700
             )
             for o in orders:
-                ib.placeOrder(o.orderId, self.contract, o)
-            self.order_id += 3
+                ib.placeOrder(o.orderId, self, o)
+            reqId += 3
 
         elif self.get_most_recent_price(reqId) - MARKET_ENTRY_THRESHOLD > self.price_estimate:
             logger.info("Signal: SELL - submitting bracket order")
             # Initializing order object
             orders = ib.bracketOrder(
-                parentOrderId=self.order_id,
+                parentOrderId=reqId,
                 action="SELL",
                 quantity=100,
                 profitTarget=1.17700,
@@ -184,18 +186,21 @@ class IBApi(EWrapper, EClient, KalmanFilter):
             )
             for o in orders:
                 ib.placeOrder(o.orderId, self.contract, o)
-            self.order_id += 3 # Order ID increment
+            reqId += 3 # Order ID increment
 
 if __name__ == "__main__":
     ib = IBApi()
 
-    eur_usd_contract = IBApi.get_forex_contract("EUR", "USD")
-    mrs = MeanReversionStrategy(ib, eur_usd_contract)
-    mac = MovingAverageCrossoverStrategy(ib, eur_usd_contract)
+    ib.contract = IBApi.get_forex_contract("EUR", "USD")
+    mrs = MeanReversionStrategy(ib, ib.contract)
+    mac = MovingAverageCrossoverStrategy(ib, ib.contract)
 
     ib.register(mrs)
     ib.register(mac)
 
     ib.connect("127.0.0.1", 7497, clientId=1)
-    threading.Thread(target=ib.run, daemon=True).start()
-    data = ib.initialize_data(99, eur_usd_contract)
+    ib_instance = threading.Thread(target=ib.run)
+    ib_instance.start()
+    ib.initialize_data(0, ib.contract)
+    ib_instance.join()
+    pass

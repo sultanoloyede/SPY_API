@@ -1,5 +1,6 @@
 import colorlog
 import logging
+from .config import LOGGING_LEVEL
 
 handler = colorlog.StreamHandler()
 handler.setFormatter(colorlog.ColoredFormatter(
@@ -16,7 +17,7 @@ handler.setFormatter(colorlog.ColoredFormatter(
 ))
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(LOGGING_LEVEL)
 logger.handlers = []  # Optional: Clear other handlers
 logger.addHandler(handler)
 logger.propagate = False
