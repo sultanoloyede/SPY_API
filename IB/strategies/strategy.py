@@ -31,7 +31,7 @@ class Strategy(ABC, Thread):
                 logger.debug("Waiting for new data in the queue...")
                 data = self.data_queue.get(timeout=1)
                 self.evaluate(data)
-                logger.info(f"{self.__class__.__name__} => Est: {self.price_estimate}, Std: {self.price_std}")
+                logger.info(f"{self.__class__.__name__} => Est: {self.price_estimate:.4f}, Std: {self.price_std:.4f}")
             except queue.Empty:
                 logger.debug("No new data available in queue, waiting...")
 

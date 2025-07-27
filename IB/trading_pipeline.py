@@ -44,7 +44,7 @@ class IBApi(EWrapper, EClient, KalmanFilter):
         for strategy in self.strategies:
             strategy.on_new_data(data)
         self.predict()
-        logger.info(f"Current Price Estimation: {self.price_estimate}$, Standard Deviation: {self.price_std}")
+        logger.info(f"Current Price Estimation: {self.price_estimate:.4f}$, Standard Deviation: {self.price_std:.4f}")
         self.compute_market_signal(reqId)
 
     #-----------------#IBApi Definitions#-----------------#
@@ -121,6 +121,7 @@ class IBApi(EWrapper, EClient, KalmanFilter):
         self.data[reqId] = df
         self.data_ready.set() 
         self.notify_all(self.data[reqId], reqId)
+        self.compute_market_signal(reqId)
     
     # Callback for once live streamed data has been completed
     def historicalDataEnd(self, reqId: int, start: str, end: str) -> None:
@@ -161,7 +162,7 @@ class IBApi(EWrapper, EClient, KalmanFilter):
 
         # Buy Condition
         if self.get_most_recent_price(reqId) + MARKET_ENTRY_THRESHOLD < self.price_estimate:
-            logger.info("Signal: BUY - submitting bracket order")
+            logger.info("BUY - submitting bracket order")
             # Initializing order object
             orders = ib.bracketOrder(
                 parentOrderId=reqId,
@@ -175,7 +176,7 @@ class IBApi(EWrapper, EClient, KalmanFilter):
             reqId += 3
 
         elif self.get_most_recent_price(reqId) - MARKET_ENTRY_THRESHOLD > self.price_estimate:
-            logger.info("Signal: SELL - submitting bracket order")
+            logger.info("SELL - submitting bracket order")
             # Initializing order object
             orders = ib.bracketOrder(
                 parentOrderId=reqId,
