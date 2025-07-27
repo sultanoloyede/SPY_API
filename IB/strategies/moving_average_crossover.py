@@ -11,6 +11,7 @@ class MovingAverageCrossoverStrategy(Strategy):
         self.order_id = 100
 
     def calculate_indicators(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = data.copy()
         data["moving_avg_50"] = data["close"].rolling(window=50).mean()
         data["moving_avg_200"] = data["close"].rolling(window=200).mean()
         data["trend"] = (data["moving_avg_50"] > data["moving_avg_200"]).astype(int)
@@ -37,14 +38,26 @@ class MovingAverageCrossoverStrategy(Strategy):
         downturns = first_rows[first_rows["trend"] == 0]["turning_diff_pct"]
 
         avg_upturn = upturns.mean()
+        std_upturn = upturns.std()
         avg_downturn = downturns.mean()
+        std_downturn = downturns.std()
 
-        return avg_upturn, avg_downturn
+        current_price = data["close"].iloc[-1]
+        current_trend = data["trend"].iloc[-1]
+
+        if current_trend == 1:
+            price_target = current_price * (1 + avg_upturn / 100)
+            price_deviation = price_target * (std_upturn / 100)
+        else:
+            price_target = current_price * (1 - abs(avg_downturn) / 100)
+            price_deviation = price_target * (std_downturn / 100)
+
+        return price_target, price_deviation
 
     def generate_signal(self, data: pd.DataFrame) -> str:
         data = self.calculate_indicators(data)
         if len(data) < 200:
-            return "HOLD"  # not enough data for MA200
+            return "HOLD"
 
         ma50 = data["moving_avg_50"].iloc[-1]
         ma200 = data["moving_avg_200"].iloc[-1]
@@ -59,28 +72,29 @@ class MovingAverageCrossoverStrategy(Strategy):
 
     def on_new_data(self, data: pd.DataFrame):
         signal = self.generate_signal(data)
+        price_target, price_deviation = self.evaluate(data)
 
         if signal == "BUY":
-            print("Signal: BUY - submitting bracket order")
+            print(f"Signal: BUY — Target: {price_target:.4f} ± {price_deviation:.4f}")
             orders = self.ib.bracketOrder(
                 parentOrderId=self.order_id,
                 action="BUY",
                 quantity=100,
-                profitTarget=data["close"].iloc[-1] * 1.01,
-                stopLoss=data["close"].iloc[-1] * 0.99
+                profitTarget=price_target,
+                stopLoss=price_target - price_deviation
             )
             for o in orders:
                 self.ib.placeOrder(o.orderId, self.contract, o)
             self.order_id += 3
 
         elif signal == "SELL":
-            print("Signal: SELL - submitting bracket order")
+            print(f"Signal: SELL — Target: {price_target:.4f} ± {price_deviation:.4f}")
             orders = self.ib.bracketOrder(
                 parentOrderId=self.order_id,
                 action="SELL",
                 quantity=100,
-                profitTarget=data["close"].iloc[-1] * 0.99,
-                stopLoss=data["close"].iloc[-1] * 1.01
+                profitTarget=price_target,
+                stopLoss=price_target + price_deviation
             )
             for o in orders:
                 self.ib.placeOrder(o.orderId, self.contract, o)
