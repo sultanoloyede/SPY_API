@@ -30,3 +30,6 @@ env/
 
 # Interactive Brokers TWS / IB Gateway logs
 /ibgateway/*/log/
+
+# DS_Store
+*.DS_Store

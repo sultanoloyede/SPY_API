@@ -15,5 +15,5 @@ class BrokerTradePort(ABC):
 
     @abstractmethod
     def bracket_order(self, asset: Asset, quantity: int, entry_price: float,
-                      take_profit: float, stop_loss: float) -> str:
+                      take_profit: float, stop_loss: float, action: str) -> str:
         pass
