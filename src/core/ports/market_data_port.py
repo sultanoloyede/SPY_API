@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from core.models.bar import Bar
+from src.core.models.bar import Bar
 from datetime import datetime
 
 class MarketDataPort(ABC):
