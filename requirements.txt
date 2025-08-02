@@ -1,6 +1,7 @@
-pandas==2.0.3
-numpy==1.24.4
-matplotlib==3.7.5
-python-dotenv==1.0.1
+pandas
+numpy
+matplotlib
+python-dotenv
 backtrader
 colorlog
+yfinance
