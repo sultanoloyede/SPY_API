@@ -1,39 +1,14 @@
 from src.core.ports.broker_trade_port import BrokerTradePort
 from src.core.models.asset import Asset
 from typing import Optional
-from ibapi.client import EClient
-from ibapi.wrapper import EWrapper
-from ibapi.contract import Contract
+from src.core.services.ibapi_client import get_ibapi_client, IBApi
 from ibapi.order import Order
+from ibapi.contract import Contract
 import threading
 import time
 
-class IBApp(EWrapper, EClient):
-    def __init__(self):
-        EClient.__init__(self, self)
-        self.nextOrderId = None
-        self.connected_event = threading.Event()
-
-    def nextValidId(self, orderId: int):
-        self.nextOrderId = orderId
-        self.connected_event.set()
-
-    def orderStatus(self, orderId, status, filled, remaining, avgFillPrice,
-                    permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice):
-        print(f"OrderStatus. ID: {orderId}, Status: {status}, PermId: {permId}")
-
-    def openOrder(self, orderId, contract, order, orderState):
-        print(f"OpenOrder. ID: {orderId}, PermId: {order.permId}")
-
-    def connect_and_start(self, host="127.0.0.1", port=7497, client_id=0):
-        self.connect(host, port, client_id)
-        thread = threading.Thread(target=self.run)
-        thread.daemon = True
-        thread.start()
-        self.connected_event.wait()
-
 class IbBrokerAdapter(BrokerTradePort):
-    def __init__(self, ib_client: IBApp):
+    def __init__(self, ib_client: IBApi):
         self.ib_client = ib_client
 
     def _create_contract(self, asset: Asset) -> Contract:
