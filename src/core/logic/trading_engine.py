@@ -18,7 +18,7 @@ class TradingEngine:
             while True:
                 bar = self.market_data.next_bar(asset.symbol)  # Blocks until new bar is available in multithreaded applications
                 if bar is None:
-                    raise ValueError("Bar object not defined")  # Or break/raise if you want to handle end-of-stream
+                    break  # Break/raise if of data stream end-of-stream
                 self.bar_data.append(bar)
                 for strategy in self.strategies:
                     strategy.evaluate(self.bar_data)

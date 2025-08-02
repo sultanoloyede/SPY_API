@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 if __name__ == "__main__":
     asset = Asset(AssetType.FOREX, "EUR", "USD")
     market_data_adapter = YFMarketDataAdapter(asset)
-    market_data_adapter.request_historical_data(asset, datetime.today()-timedelta(365), datetime.today())
+    market_data_adapter.request_historical_data(asset, datetime.today()-timedelta(365*4), datetime.today())
     broker_adapter = BacktraderBrokerAdapter(BacktraderApp()) 
     strategy = MovingAverageCrossoverStrategy(broker_adapter, asset)
     trading_engine = TradingEngine(broker_adapter, market_data_adapter, [strategy])

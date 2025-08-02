@@ -13,9 +13,12 @@ class YFMarketDataAdapter(MarketDataPort):
         self._counter: int = 0
 
     def next_bar(self, symbol: str) -> Bar:
-        bar = self._list_data[self._counter]
-        self._counter += 1
-        return bar
+        if len(self._list_data) > self._counter:
+            bar = self._list_data[self._counter]
+            self._counter += 1
+            return bar
+        else:
+            return None
 
     def request_historical_data(self, asset: Asset, start_date: datetime, end_date: datetime):
         with tempfile.TemporaryDirectory() as tmpdir:

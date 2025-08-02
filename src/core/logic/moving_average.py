@@ -26,21 +26,13 @@ class MovingAverageCrossoverStrategy(Strategy):
             accumulation_50_day = 0
             accumulation_200_day = 0
 
-            # Iterate over first 50 bars
-            for i in range(50):
-                bar = bar_data[i]
-                # TODO: Research which candlestick info we should use between OCHL
-                accumulation_50_day += bar.high
-                accumulation_200_day += bar.high
+            # Iterate over last 50 bars
+            last_50_bars = bar_data[-50:]
+            sma_50_day = sum(bar.high for bar in last_50_bars) / 50
 
             # Iterate over next 150 bars
-            for i in range(51, 200):
-                bar = bar_data[i]
-                # TODO: Research which candlestick info we should use between OCHL
-                accumulation_200_day += bar.high
-
-            sma_50_day = accumulation_50_day / 50
-            sma_200_day = accumulation_200_day / 200
+            last_200_bars = bar_data[-200:]
+            sma_200_day = sum(bar.high for bar in last_200_bars) / 200
 
             # Update the 50 day SMA tally
             self.data_50_sma.append(sma_50_day)
@@ -52,22 +44,25 @@ class MovingAverageCrossoverStrategy(Strategy):
             while len(self.data_200_sma) > 200:
                 self.data_200_sma.pop(0)
 
+            # Compute current date
+            current_date = bar_data[-1].timestamp
+
             # Compute crossing
             if (
                 len(self.data_50_sma) > 1 and len(self.data_200_sma) > 1 and
                 self.data_50_sma[-1] < self.data_200_sma[-1] and # Death Crossing condition
                 self.data_50_sma[-2] >= self.data_200_sma[-2]
                 ):
-                logger.info("Detected Death Cross of 50/200 bar SMA")
+                logger.info(f"Detected Death Cross of 50/200 bar SMA at {current_date}")
                 self.broker.sell(self.asset, 1)
             elif (
                 len(self.data_50_sma) > 1 and len(self.data_200_sma) > 1 and
                 self.data_50_sma[-1] > self.data_200_sma[-1] and # Golden Crossing condition
                 self.data_50_sma[-2] <= self.data_200_sma[-2]
                 ):
-                logger.info("Detected Golden Cross of 50/200 bar SMA")
+                logger.info(f"Detected Golden Cross of 50/200 bar SMA at {current_date}")
                 self.broker.buy(self.asset, 1)
             else:
                 pass
         else:
-            logger.info(f"Insufficient ammount of data to compute 50 and 200 bar moving average. Only {len(bar_data)} bars available.")
+            logger.debug(f"Insufficient ammount of data to compute 50 and 200 bar moving average. Only {len(bar_data)} bars available.")
