@@ -1,6 +1,3 @@
-import numpy as np
-import pandas as pd
-from typing import Tuple
 from src.core.logic.strategy import Strategy
 from src.core.models.asset import Asset, AssetType
 from src.core.models.bar import Bar
@@ -44,8 +41,10 @@ class MovingAverageCrossoverStrategy(Strategy):
             while len(self.data_200_sma) > 200:
                 self.data_200_sma.pop(0)
 
-            # Compute current date
-            current_date = bar_data[-1].timestamp
+            # Compute current values
+            current_bar = bar_data[-1]
+            current_price = current_bar.low            
+            current_date = current_bar.timestamp
 
             # Compute crossing
             if (
@@ -54,14 +53,14 @@ class MovingAverageCrossoverStrategy(Strategy):
                 self.data_50_sma[-2] >= self.data_200_sma[-2]
                 ):
                 logger.info(f"Detected Death Cross of 50/200 bar SMA at {current_date}")
-                self.broker.sell(self.asset, 1)
+                self.broker.sell(self.asset, 1, current_price)
             elif (
                 len(self.data_50_sma) > 1 and len(self.data_200_sma) > 1 and
                 self.data_50_sma[-1] > self.data_200_sma[-1] and # Golden Crossing condition
                 self.data_50_sma[-2] <= self.data_200_sma[-2]
                 ):
                 logger.info(f"Detected Golden Cross of 50/200 bar SMA at {current_date}")
-                self.broker.buy(self.asset, 1)
+                self.broker.buy(self.asset, 1, current_price)
             else:
                 pass
         else:
