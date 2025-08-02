@@ -6,11 +6,11 @@ from src.core.models.asset import Asset
 class BrokerTradePort(ABC):
 
     @abstractmethod
-    def buy(self, asset: Asset, quantity: int, price: Optional[float] = None) -> str:
+    def buy(self, asset: Asset, quantity: int) -> str:
         pass
 
     @abstractmethod
-    def sell(self, sasset: Asset, quantity: int, price: Optional[float] = None) -> str:
+    def sell(self, sasset: Asset, quantity: int) -> str:
         pass
 
     @abstractmethod
