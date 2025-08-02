@@ -9,4 +9,13 @@ Downloads:
 
 - Python 3.8.8
 
-- Latest [IBApi version](https://interactivebrokers.github.io/downloads/TWS%20API%20Install%201030.01.msi) 
+- Latest [IBApi version](https://interactivebrokers.github.io/downloads/TWS%20API%20Install%201030.01.msi)
+
+## Setting up the environment
+
+```
+python3.13 -m venv .venv
+.\.venv\Scripts\activate
+pip install -e .
+pip install -r requirements.txt
+```
