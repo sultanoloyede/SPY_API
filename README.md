@@ -14,7 +14,7 @@ Downloads:
 ## Setting up the environment
 
 ```
-python3.13 -m venv .venv
+python -m venv .venv # This may vary depending on python environment variable setup. Try python, python3, python3.13.
 .\.venv\Scripts\activate
 pip install -e .
 pip install -r requirements.txt
