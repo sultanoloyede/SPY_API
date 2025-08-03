@@ -40,11 +40,16 @@ class IBApi(EWrapper, EClient):
         time.sleep(1)
         if self.isConnected():
             self.connected_event = True
-            print("✅ Connected to IB")
+            print("Connected to IB")
         else:
-            print("❌ Failed to connect to IB")
+            print("Failed to connect to IB")
+
+# Singleton instance holder
+ibapi_singleton = None
 
 def get_ibapi_client():
-    client = IBApi()
-    client.connect_and_run()
-    return client
+    global ibapi_singleton
+    if ibapi_singleton is None:
+        ibapi_singleton = IBApi()
+        ibapi_singleton.connect_and_run()
+    return ibapi_singleton
