@@ -1,7 +1,7 @@
 from src.core.ports.broker_trade_port import BrokerTradePort
 from src.core.models.asset import Asset
 from typing import Optional
-from src.core.services.ibapi_client import get_ibapi_client, IBApi
+from src.core.services.ibapi_client import IBApi
 from ibapi.order import Order
 from ibapi.contract import Contract
 import threading
