@@ -6,9 +6,8 @@ from src.core.models.bar import Bar
 from typing import List
 
 class Strategy:
-    def __init__(self, broker: BrokerTradePort, market_data: MarketDataPort, asset: Asset):
+    def __init__(self, broker: BrokerTradePort, asset: Asset):
         self.broker = broker
-        self.market_data = market_data
         self.asset = asset
 
     def evaluate(self, bar_data:List[Bar]):

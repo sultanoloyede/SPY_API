@@ -19,28 +19,24 @@ class IbBrokerAdapter(BrokerTradePort):
         contract.currency = asset.currency
         return contract
 
-    def _create_order(self, action: str, quantity: int, price: Optional[float] = None) -> Order:
+    def _create_order(self, action: str, quantity: int) -> Order:
         order = Order()
         order.action = action
         order.totalQuantity = quantity
-        if price is not None:
-            order.orderType = "LMT"
-            order.lmtPrice = price
-        else:
-            order.orderType = "MKT"
+        order.orderType = "MKT"
         return order
 
-    def buy(self, asset: Asset, quantity: int, price: Optional[float] = None) -> str:
+    def buy(self, asset: Asset, quantity: int) -> str:
         contract = self._create_contract(asset)
-        order = self._create_order("BUY", quantity, price)
+        order = self._create_order("BUY", quantity)
         order_id = self.ib_client.nextOrderId
         self.ib_client.placeOrder(order_id, contract, order)
         self.ib_client.nextOrderId += 1
         return str(order_id)
 
-    def sell(self, asset: Asset, quantity: int, price: Optional[float] = None) -> str:
+    def sell(self, asset: Asset, quantity: int) -> str:
         contract = self._create_contract(asset)
-        order = self._create_order("SELL", quantity, price)
+        order = self._create_order("SELL", quantity)
         order_id = self.ib_client.nextOrderId
         self.ib_client.placeOrder(order_id, contract, order)
         self.ib_client.nextOrderId += 1
