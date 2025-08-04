@@ -1,10 +1,18 @@
-from src.core.logic.trading_engine import TradingEngine
-from src.core.adapters.yf_market_adapter import YFMarketDataAdapter
-from src.core.logic.moving_average import MovingAverageCrossoverStrategy
-from src.core.adapters.custom_broker_adapter import CustomBrokerAdapter
-from src.core.models.bar import Bar
-from src.core.models.asset import Asset, AssetType
+#Utils
 from datetime import datetime, timedelta
+
+# Domain Objects
+from src.core.models.asset import Asset, AssetType
+from src.core.models.bar import Bar
+
+# Strategies
+from src.core.logic.trading_engine import TradingEngine
+from src.core.logic.moving_average import MovingAverageCrossoverStrategy
+
+# Adapters
+from src.core.adapters.yf_market_adapter import YFMarketDataAdapter
+from src.core.adapters.custom_broker_adapter import CustomBrokerAdapter
+
 
 if __name__ == "__main__":
     asset = Asset(AssetType.FOREX, "EUR", "USD")
