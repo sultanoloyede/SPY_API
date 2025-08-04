@@ -1,4 +1,3 @@
-# ibapi_client.py
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from ibapi.common import *
@@ -8,12 +7,23 @@ import threading
 import time
 
 class IBApi(EWrapper, EClient):
+    _instance = None  # Class-level singleton holder
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(IBApi, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self):
-        EClient.__init__(self, self)
+        # Prevent __init__ from re-running on subsequent instantiations
+        if hasattr(self, '_initialized') and self._initialized:
+            return
+        super().__init__(self)
         self.nextOrderId = None
         self.order_id_ready = threading.Event()
         self.historical_data_buffer: list[BarData] = []
         self.historical_data_done = threading.Event()
+        self._initialized = True  # Flag to prevent re-initialization
 
     def nextValidId(self, orderId: int):
         self.nextOrderId = orderId
@@ -44,12 +54,3 @@ class IBApi(EWrapper, EClient):
         else:
             print("Failed to connect to IB")
 
-# Singleton instance holder
-ibapi_singleton = None
-
-def get_ibapi_client():
-    global ibapi_singleton
-    if ibapi_singleton is None:
-        ibapi_singleton = IBApi()
-        ibapi_singleton.connect_and_run()
-    return ibapi_singleton
