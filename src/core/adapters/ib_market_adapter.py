@@ -6,7 +6,7 @@ from ibapi.contract import Contract
 from datetime import datetime
 import time
 
-class IbapiDataAdapter(MarketDataPort):
+class IbApiDataAdapter(MarketDataPort):
     def __init__(self, ib_client: IBApi):
         self.ib_client = ib_client
 
