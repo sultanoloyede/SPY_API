@@ -18,11 +18,11 @@ class IbApiDataAdapter(MarketDataPort):
         contract.currency = asset.currency
         return contract
 
-    def request_historical_data(self, symbol: str, start_date: datetime, end_date: datetime):
+    def request_historical_data(self, asset: Asset, start_date: datetime, end_date: datetime):
         self.ib_client.historical_data_buffer = []
         self.ib_client.historical_data_done.clear()
 
-        contract = self._create_contract(symbol)
+        contract = self._create_contract(asset.symbol)
         end_date_str = end_date.strftime("%Y%m%d %H:%M:%S")
 
         self.ib_client.reqHistoricalData(
@@ -40,7 +40,7 @@ class IbApiDataAdapter(MarketDataPort):
 
         self.ib_client.historical_data_done.wait(timeout=10)
 
-    def next_bar(self, symbol: str) -> Bar:
+    def next_bar(self, asset: Asset) -> Bar:
         bar_data = self.ib_client.historical_data_buffer[-1]
         return Bar(
             timestamp=bar_data.date,

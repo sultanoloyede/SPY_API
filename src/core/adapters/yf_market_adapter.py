@@ -12,7 +12,7 @@ class YFMarketDataAdapter(MarketDataPort):
         self._list_data:list[Bar] = []
         self._counter: int = 0
 
-    def next_bar(self, symbol: str) -> Bar:
+    def next_bar(self, asset: Asset) -> Bar:
         if len(self._list_data) > self._counter:
             bar = self._list_data[self._counter]
             self._counter += 1

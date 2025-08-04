@@ -16,7 +16,7 @@ class TradingEngine:
     def run(self, asset: Asset, threaded: bool = True):
         def engine_loop():
             while True:
-                bar = self.market_data.next_bar(asset.symbol)  # Blocks until new bar is available in multithreaded applications
+                bar = self.market_data.next_bar(asset)  # Blocks until new bar is available in multithreaded applications
                 if bar is None:
                     self.broker.compute_stats()
                     break
