@@ -1,0 +1,35 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+
+# Virtual environment (if you ever create one here)
+.env/
+.venv/
+venv/
+ENV/
+env.bak/
+env/
+
+# VS Code
+.vscode/
+
+# dotenv secrets
+.env
+
+# Data & models (if you regenerate them elsewhere)
+*.csv
+*.joblib
+
+# Logs and cache
+*.log
+.cache/
+
+# Interactive Brokers TWS / IB Gateway logs
+/ibgateway/*/log/
+
+# DS_Store
+*.DS_Store
