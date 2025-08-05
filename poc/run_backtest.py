@@ -8,10 +8,9 @@ def main():
     pair = "EUR/USD"
     data = get_forex_data(pair, output_size=1000)
 
-    # Initialize your RSI strategy
+    # Initialize your strategy
     strategy = RSIStrategy(rsi_period=14, oversold_threshold=30, overbought_threshold=70)
 
-    # Run backtest comparison
     compare_to_baseline(data, strategy, name="RSIStrategy", start_date=START_DATE, end_date=END_DATE)
 
 if __name__ == "__main__":
