@@ -1,10 +1,13 @@
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
-from ibapi.common import *
+from ibapi.common import BarData as IB_BAR
 from ibapi.contract import *
 from threading import Thread
+from src.core.models.bar import Bar
 import threading
 import time
+from queue import Queue
+from src.utils.logger import logger
 
 class IBApi(EWrapper, EClient):
     _instance = None  # Class-level singleton holder
@@ -18,11 +21,12 @@ class IBApi(EWrapper, EClient):
         # Prevent __init__ from re-running on subsequent instantiations
         if hasattr(self, '_initialized') and self._initialized:
             return
-        super().__init__(self)
+        EClient.__init__(self, self)
         self.nextOrderId = None
         self.order_id_ready = threading.Event()
-        self.historical_data_buffer: list[BarData] = []
+        self.historical_data_buffer: Queue[Bar] = Queue()
         self.historical_data_done = threading.Event()
+        self.connect_and_run()
         self._initialized = True  # Flag to prevent re-initialization
 
     def nextValidId(self, orderId: int):
@@ -35,11 +39,29 @@ class IBApi(EWrapper, EClient):
         self.nextOrderId += 1
         return order_id
 
-    def historicalData(self, reqId, bar: BarData):
-        self.historical_data_buffer.append(bar)
+    def historicalData(self, reqId: int, bar: IB_BAR) -> None:
+        bar = Bar(
+            timestamp=bar.date,
+            open=bar.open,
+            high=bar.high,
+            low=bar.low,
+            close=bar.close,
+            volume=bar.volume
+        )
+        self.historical_data_buffer.put(bar)
 
-    def historicalDataEnd(self, reqId: int, start: str, end: str):
-        self.historical_data_done.set()
+    def historicalDataUpdate(self, reqId:int, bar:IB_BAR) -> None:
+        bar = Bar(
+            timestamp=bar.date,
+            open=bar.open,
+            high=bar.high,
+            low=bar.low,
+            close=bar.close,
+            volume=bar.volume
+        )
+        self.historical_data_buffer.put(bar)
+        logger.debug(f"Processed new bar: {bar}")
+        
 
     def connect_and_run(self, host="127.0.0.1", port=7497, client_id=1):
         self.connect(host, port, client_id)

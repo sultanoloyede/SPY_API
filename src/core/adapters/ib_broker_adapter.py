@@ -75,3 +75,6 @@ class IbBrokerAdapter(BrokerTradePort):
 
         self.ib_client.nextOrderId += 3
         return str(parent_id)
+    
+    def compute_stats(self):
+        pass
