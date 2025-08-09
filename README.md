@@ -25,13 +25,39 @@ To setup the environment, read and follow [`src/README.md`](src/README.md)
 - **Strategies:** Modular, plug-and-play (e.g., Moving Average, Kalman Filter)
 - **Engine:** Orchestrates data, strategy, and broker actions
 
-- Latest [IBApi version](https://interactivebrokers.github.io/downloads/TWS%20API%20Install%201030.01.msi)
+## Example: Moving Average Crossover Strategy
 
-## Setting up the environment
+```python
+from src.core.logic.trading_engine import TradingEngine
+from src.core.adapters.yf_market_adapter import YFMarketDataAdapter
+from src.core.logic.moving_average import MovingAverageCrossoverStrategy
+from src.core.adapters.custom_broker_adapter import CustomBrokerAdapter
+from src.core.models.bar import Bar
+from src.core.models.asset import Asset, AssetType
+from datetime import datetime, timedelta
+
+if __name__ == "__main__":
+    asset = Asset(AssetType.FOREX, "EUR", "USD")
+    market_data_adapter = YFMarketDataAdapter(asset)
+    market_data_adapter.request_historical_data(asset, datetime.today()-timedelta(365*4), datetime.today())
+    broker_adapter = CustomBrokerAdapter(10000)
+    strategy = MovingAverageCrossoverStrategy(broker_adapter, asset)
+    trading_engine = TradingEngine(broker_adapter, market_data_adapter, [strategy])
+    trading_engine.run(asset, threaded=False)
 
 ```
-python -m venv .venv # This may vary depending on python environment variable setup. Try python, python3, python3.13.
-.\.venv\Scripts\activate
-pip install -e .
-pip install -r requirements.txt
-```
+
+## Visualization
+
+![Backtest Chart](Resources/Images/Charts/IBPaperTrading.png)
+
+Candlestick charts with buy/sell markers are generated for backtest results.
+
+## Authors
+- [Josue Dazogbo](https://github.com/JDazogbo)
+- [Sultan Oloyede](https://github.com/sultanoloyede)
+
+## Resources
+- [System Architecture](Resources/Design/SystemArchitecture.md)
+- [Logging & Backtest Charts](Resources/Images/Charts/IBPaperTrading.png)
+- [System Level View](Resources/Images/System/SystemLevelView.png)
