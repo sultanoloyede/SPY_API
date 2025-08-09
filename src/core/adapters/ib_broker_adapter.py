@@ -1,7 +1,7 @@
 from src.core.ports.broker_trade_port import BrokerTradePort
 from src.core.models.asset import Asset
 from typing import Optional
-from src.core.services.ibapi_client import get_ibapi_client, IBApi
+from src.core.services.ibapi_client import IBApi
 from ibapi.order import Order
 from ibapi.contract import Contract
 import threading
@@ -15,7 +15,7 @@ class IbBrokerAdapter(BrokerTradePort):
         contract = Contract()
         contract.symbol = asset.symbol
         contract.secType = "CASH"
-        contract.exchange = asset.exchange
+        contract.exchange = "IDEALPRO"
         contract.currency = asset.currency
         return contract
 
@@ -26,7 +26,7 @@ class IbBrokerAdapter(BrokerTradePort):
         order.orderType = "MKT"
         return order
 
-    def buy(self, asset: Asset, quantity: int) -> str:
+    def buy(self, asset: Asset, quantity: int, price: float) -> str: # Price Parameters is irrelevant when live trading
         contract = self._create_contract(asset)
         order = self._create_order("BUY", quantity)
         order_id = self.ib_client.nextOrderId
@@ -34,7 +34,7 @@ class IbBrokerAdapter(BrokerTradePort):
         self.ib_client.nextOrderId += 1
         return str(order_id)
 
-    def sell(self, asset: Asset, quantity: int) -> str:
+    def sell(self, asset: Asset, quantity: int, price: float) -> str: # Price Parameters is irrelevant when live trading
         contract = self._create_contract(asset)
         order = self._create_order("SELL", quantity)
         order_id = self.ib_client.nextOrderId
@@ -75,3 +75,6 @@ class IbBrokerAdapter(BrokerTradePort):
 
         self.ib_client.nextOrderId += 3
         return str(parent_id)
+    
+    def compute_stats(self):
+        pass

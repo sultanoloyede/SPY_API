@@ -1,16 +1,26 @@
-from src.core.logic.trading_engine import TradingEngine
-from src.core.adapters.yf_market_adapter import YFMarketDataAdapter
-from src.core.logic.moving_average import MovingAverageCrossoverStrategy
-from src.core.adapters.custom_broker_adapter import CustomBrokerAdapter
-from src.core.models.bar import Bar
-from src.core.models.asset import Asset, AssetType
+#Utils
 from datetime import datetime, timedelta
+from src.core.services.ibapi_client import IBApi
+
+# Domain Objects
+from src.core.models.asset import Asset, AssetType
+from src.core.models.bar import Bar
+
+# Strategies
+from src.core.logic.trading_engine import TradingEngine
+from src.core.logic.moving_average import MovingAverageCrossoverStrategy
+
+# Adapters
+from src.core.adapters.ib_market_adapter import IbApiDataAdapter
+from src.core.adapters.ib_broker_adapter import IbBrokerAdapter
+
 
 if __name__ == "__main__":
     asset = Asset(AssetType.FOREX, "EUR", "USD")
-    market_data_adapter = YFMarketDataAdapter(asset)
-    market_data_adapter.request_historical_data(asset, datetime.today()-timedelta(365*4), datetime.today())
-    broker_adapter = CustomBrokerAdapter(10000)
+    ib_api = IBApi()
+    market_data_adapter = IbApiDataAdapter(ib_api)
+    market_data_adapter.request_historical_data(asset, datetime.today() - timedelta(days=300))
+    broker_adapter = IbBrokerAdapter(ib_api)
     strategy = MovingAverageCrossoverStrategy(broker_adapter, asset)
     trading_engine = TradingEngine(broker_adapter, market_data_adapter, [strategy])
-    trading_engine.run(asset, threaded=False)
+    trading_engine.run(asset, threaded=True)

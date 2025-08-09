@@ -13,7 +13,7 @@ class CustomBrokerAdapter(BrokerTradePort):
         self.closed_trades = []
         logger.info(f"Initialized CustomBrokerAdapter with starting cash: {self.current_balance}")
 
-    def buy(self, asset: Asset, quantity: int, price: float) -> str:
+    def buy(self, asset: Asset, quantity: int, price: float) -> None:
         if price is None:
             logger.error("Buy failed: No price provided for asset.")
             raise ValueError("Asset must have a 'price' attribute for backtesting.")
@@ -21,8 +21,8 @@ class CustomBrokerAdapter(BrokerTradePort):
         total_cost = price * quantity
         if total_cost > self.current_balance:
             logger.warning(f"Buy failed: Insufficient funds to buy {quantity} of {asset.symbol} at ${price:.2f}")
-            return "Insufficient funds"
-
+            raise ValueError()
+        
         trade = {
             'type': 'BUY',
             'asset': asset,
@@ -44,10 +44,8 @@ class CustomBrokerAdapter(BrokerTradePort):
                 self.closed_trades.append(trade)
                 self.current_balance += price * quantity
                 logger.info(f"Executed SELL: {quantity}x {asset.symbol} at ${price:.2f} | New Cash: ${self.current_balance:.2f}")
-                return f"SELL-{self.trades.index(trade)}"
 
         logger.warning(f"Sell failed: No open trade found for {asset.symbol}")
-        return "No open trade found to sell"
 
     def bracket_order(self, asset: Asset, quantity: int, entry_price: float,
                       take_profit: float, stop_loss: float, action: str) -> str:
@@ -55,7 +53,7 @@ class CustomBrokerAdapter(BrokerTradePort):
         if action == "BUY":
             if entry_price * quantity > self.current_balance:
                 logger.warning(f"Bracket order failed: Insufficient funds to buy {quantity} of {asset.symbol}")
-                return "Insufficient funds"
+                raise ValueError()
             trade = {
                 'type': 'BUY_BRACKET',
                 'asset': asset,
@@ -68,7 +66,6 @@ class CustomBrokerAdapter(BrokerTradePort):
             self.trades.append(trade)
             self.current_balance -= entry_price * quantity
             logger.info(f"Placed BUY_BRACKET for {asset.symbol}: Entry ${entry_price}, TP ${take_profit}, SL ${stop_loss}")
-            return f"BUY_BRACKET-{len(self.trades)-1}"
 
         elif action == "SELL":
             trade = {
@@ -83,10 +80,8 @@ class CustomBrokerAdapter(BrokerTradePort):
             self.trades.append(trade)
             self.current_balance += entry_price * quantity
             logger.info(f"Placed SELL_BRACKET for {asset.symbol}: Entry ${entry_price}, TP ${take_profit}, SL ${stop_loss}")
-            return f"SELL_BRACKET-{len(self.trades)-1}"
 
         logger.error(f"Bracket order failed: Invalid action '{action}'")
-        return "Invalid action for bracket order"
 
     def _get_open_trades(self):
         open_trades = [tr for tr in self.trades if tr['status'] == 'OPEN']

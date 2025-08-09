@@ -46,8 +46,7 @@ def mock_forex_asset():
 def test_feed_next_bar(mock_broker, mock_market_data, mock_strategy, mock_forex_asset):
     trading_engine = TradingEngine(mock_broker, mock_market_data, [mock_strategy])
 
-    with pytest.raises(ValueError):
-        trading_engine.run(asset=mock_forex_asset, threaded=False)
+    trading_engine.run(asset=mock_forex_asset, threaded=False)
 
     # Assert that the strategy was called in with data
     mock_strategy.evaluate.assert_called_once()

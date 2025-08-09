@@ -1,52 +1,101 @@
 from src.core.ports.market_data_port import MarketDataPort
-from src.core.models.asset import Asset
+from src.core.models.asset import Asset, AssetType
 from src.core.models.bar import Bar
 from src.core.services.ibapi_client import IBApi
+from src.utils.logger import logger
 from ibapi.contract import Contract
+from ibapi.common import BarData as IBDATA
 from datetime import datetime
-import time
+from queue import Queue
+import pytz
 
-class IbapiDataAdapter(MarketDataPort):
+class IbApiDataAdapter(MarketDataPort):
     def __init__(self, ib_client: IBApi):
         self.ib_client = ib_client
 
     def _create_contract(self, asset: Asset) -> Contract:
-        contract = Contract()
-        contract.symbol = asset.symbol
-        contract.secType = "CASH"
-        contract.exchange = asset.exchange
-        contract.currency = asset.currency
-        return contract
+        if asset.asset_type == AssetType.FOREX:
+            contract = Contract()
+            contract.symbol = asset.symbol
+            contract.secType = "CASH"
+            contract.exchange = "IDEALPRO"
+            contract.currency = asset.currency
+            return contract
+        else:
+            logger.error("Contract creation failed: Asset type not implemented.")
+    
+    def _get_ib_duration_and_bar_size(self, start_date: datetime, end_date: datetime):
+        delta = end_date - start_date
+        seconds = delta.total_seconds()
 
-    def request_historical_data(self, symbol: str, start_date: datetime, end_date: datetime):
-        self.ib_client.historical_data_buffer = []
-        self.ib_client.historical_data_done.clear()
+        if seconds < 60:
+            duration = f"{max(int(seconds), 30)} S"
+            bar_size = "30 secs"
 
-        contract = self._create_contract(symbol)
-        end_date_str = end_date.strftime("%Y%m%d %H:%M:%S")
+        elif seconds < 7 * 86400:  # less than 1 week
+            days = max(int(seconds // 86400), 1)
+            duration = f"{days} D"
+            bar_size = "1 hour"
 
-        self.ib_client.reqHistoricalData(
-            reqId=1,
-            contract=contract,
-            endDateTime=end_date_str,
-            durationStr="1 M",
-            barSizeSetting="1 day",
-            whatToShow="TRADES",
-            useRTH=1,
-            formatDate=1,
-            keepUpToDate=False,
-            chartOptions=[]
-        )
+        elif seconds < 30 * 86400:  # less than ~1 month
+            weeks = max(int(seconds // (7 * 86400)), 1)
+            duration = f"{weeks} W"
+            bar_size = "1 day"
 
-        self.ib_client.historical_data_done.wait(timeout=10)
+        elif seconds < 365 * 86400:  # less than 1 year
+            months = max(int(seconds // (30 * 86400)), 1)
+            duration = f"{months} M"
+            bar_size = "1 day"
 
-    def next_bar(self, symbol: str) -> Bar:
-        bar_data = self.ib_client.historical_data_buffer[-1]
-        return Bar(
-            timestamp=bar_data.date,
-            open=bar_data.open,
-            high=bar_data.high,
-            low=bar_data.low,
-            close=bar_data.close,
-            volume=bar_data.volume,
-        )
+        else:  # 1 year or more
+            years = max(int(seconds // (365 * 86400)), 1)
+            duration = f"{years} Y"
+            bar_size = "1 week"
+
+        return duration, bar_size
+    
+    def request_historical_data(self, asset: Asset, start_date: datetime, end_date: datetime = None):
+
+        contract = self._create_contract(asset)
+
+        if end_date is not None: # Historical Update
+        
+            end_date_utc = end_date.astimezone(pytz.utc)
+            end_date_str = end_date_utc.strftime("%Y%m%d-%H:%M:%S")
+            self._duration, self._bar_size = self._get_ib_duration_and_bar_size(start_date, end_date)
+        
+            self.ib_client.reqHistoricalData(
+                reqId=1,
+                contract=contract,
+                endDateTime=end_date_str,
+                durationStr=self._duration,
+                barSizeSetting=self._bar_size, 
+                whatToShow='MIDPOINT',
+                useRTH=0,
+                formatDate=2, # We use unix timestamp to do numpy math
+                keepUpToDate=False,
+                chartOptions=[]
+            )
+
+        elif end_date is None: # Live updates
+            
+            end_date = datetime.today()
+            end_date_utc = end_date.astimezone(pytz.utc)
+            end_date_str = end_date_utc.strftime("%Y%m%d-%H:%M:%S")
+            self._duration, self._bar_size = self._get_ib_duration_and_bar_size(start_date, end_date)
+            
+            self.ib_client.reqHistoricalData(
+                reqId=1,
+                contract=contract,
+                endDateTime='', # IB assumes that empty string means till "current present moment"
+                durationStr=self._duration, # Ask for past data for 1 Day
+                barSizeSetting=self._bar_size, # Ask for 1 minute bar data interval
+                whatToShow='MIDPOINT',
+                useRTH=0,
+                formatDate=2, # We use unix timestamp to do numpy math
+                keepUpToDate=True,
+                chartOptions=[]
+            )
+    
+    def next_bar(self, asset: Asset) -> Bar:
+        return self.ib_client.historical_data_buffer.get()
