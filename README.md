@@ -25,6 +25,7 @@ To setup the environment, read and follow [`src/README.md`](src/README.md)
 - **Strategies:** Modular, plug-and-play (e.g., Moving Average, Kalman Filter)
 - **Engine:** Orchestrates data, strategy, and broker actions
 
+<<<<<<< HEAD
 ## Example: Moving Average Crossover Strategy
 
 ```python
@@ -61,3 +62,15 @@ Candlestick charts with buy/sell markers are generated for backtest results.
 - [System Architecture](Resources/Design/SystemArchitecture.md)
 - [Logging & Backtest Charts](Resources/Images/Charts/IBPaperTrading.png)
 - [System Level View](Resources/Images/System/SystemLevelView.png)
+=======
+- Latest [IBApi version](https://interactivebrokers.github.io/downloads/TWS%20API%20Install%201030.01.msi)
+
+## Setting up the environment
+
+```
+python -m venv .venv # This may vary depending on python environment variable setup. Try python, python3, python3.13.
+.\.venv\Scripts\activate
+pip install -e .
+pip install -r requirements.txt
+```
+>>>>>>> e92d4de4a9103e89992c99eb75670fe654bc8678
