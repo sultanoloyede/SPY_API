@@ -6,3 +6,4 @@ backtrader==1.9.78.123
 colorlog==6.9.0
 yfinance==0.2.65
 setuptools==80.9.0
+pytest==8.4.1
