@@ -1,6 +1,9 @@
-pandas==2.0.3
-numpy==1.24.4
-matplotlib==3.7.5
-python-dotenv==1.0.1
-backtrader
-colorlog
+pandas==2.3.1
+numpy==2.3.2
+matplotlib==3.10.5
+python-dotenv==1.1.1
+backtrader==1.9.78.123
+colorlog==6.9.0
+yfinance==0.2.65
+setuptools==80.9.0
+pytest==8.4.1
