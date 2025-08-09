@@ -1,6 +1,6 @@
 # Black Wall Street
 
-A modular, extensible trading strategy creation plateform built with scalable design patterns (Ports and Adapters/Hexagonal architecture). Supports live trading (Interactive Brokers) and backtesting (custom/Yahoo adapters) for stocks, forex, and more.
+A modular and extensible trading strategy creation platform built with scalable design patterns, supporting live trading (Interactive Brokers) and backtesting (custom/Yahoo adapters) for stocks, forex, and more.
 
 ## Features
 - **Live Trading:** Connects to Interactive Brokers (IB or IBkr) via IB API and Traders Works Station (TWS) for real-time execution.
