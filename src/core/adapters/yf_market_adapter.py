@@ -5,6 +5,7 @@ import yfinance as yf
 import tempfile
 from datetime import datetime, timedelta
 
+import plotly as py
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -58,4 +59,4 @@ class YFMarketDataAdapter(MarketDataPort):
             close=closes
         ))
         fig.update_layout(title="Candlestick Chart", xaxis_title="Date", yaxis_title="Price")
-        fig.show()
+        py.offline.plot(fig)
