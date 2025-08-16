@@ -5,7 +5,11 @@ import yfinance as yf
 import tempfile
 from datetime import datetime, timedelta
 
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 class YFMarketDataAdapter(MarketDataPort):
+
 
     def __init__(self, asset: Asset):
         self.asset = Asset
@@ -37,3 +41,21 @@ class YFMarketDataAdapter(MarketDataPort):
                 ]
             else:
                 raise NotImplemented("Asset Type not Implemented")
+    def generate_data_plot(self):
+
+        dates = [bar.timestamp for bar in self._list_data]
+        opens = [bar.open for bar in self._list_data]
+        highs = [bar.high for bar in self._list_data]
+        lows = [bar.low for bar in self._list_data]
+        closes = [bar.close for bar in self._list_data]
+
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_trace(go.Candlestick(
+            x=dates,
+            open=opens,
+            high=highs,
+            low=lows,
+            close=closes
+        ))
+        fig.update_layout(title="Candlestick Chart", xaxis_title="Date", yaxis_title="Price")
+        fig.show()
