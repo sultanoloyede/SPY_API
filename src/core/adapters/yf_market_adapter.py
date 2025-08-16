@@ -58,5 +58,11 @@ class YFMarketDataAdapter(MarketDataPort):
             low=lows,
             close=closes
         ))
-        fig.update_layout(title="Candlestick Chart", xaxis_title="Date", yaxis_title="Price")
+        fig.update_layout(
+            title=f"Historical Data - {self.asset}", 
+            xaxis_title="Date", 
+            yaxis_title=f"{self.asset} Price ({self.asset.currency})",
+            xaxis_rangeslider_visible=False,
+            template="plotly_dark"
+            )
         py.offline.plot(fig)
