@@ -13,7 +13,7 @@ class YFMarketDataAdapter(MarketDataPort):
 
 
     def __init__(self, asset: Asset):
-        self.asset = Asset
+        self.asset = asset
         self._list_data:list[Bar] = []
         self._counter: int = 0
 
