@@ -16,10 +16,21 @@
 
         },
         {
-            "name": "Run Trading Pipeline",
+            "name": "Run Live Trading Pipeline",
             "type": "debugpy",
             "request": "launch",
             "program": "src/core/logic/pipeline.py",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+
+        },
+        {
+            "name": "Run Backtest Pipeline",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/tests/functional/backtest.py",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
