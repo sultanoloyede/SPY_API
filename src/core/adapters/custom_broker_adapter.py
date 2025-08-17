@@ -113,22 +113,6 @@ class CustomBrokerAdapter(BrokerTradePort):
         else:
             perc_buy_hold_return = 0.0
 
-        # Sharp ratio computation
-        risk_free_rate = perc_buy_hold_return
-        trade_returns = []
-        for tr in closed_trades:
-            buy_price = tr.get('buy_price', 0)
-            sell_price = tr.get('sell_price', 0)
-            if buy_price > 0:
-                trade_returns.append((sell_price - buy_price) / buy_price)
-        if trade_returns:
-            mean_return = np.mean(trade_returns)
-            std_return = np.std(trade_returns)
-            sharpe_ratio = ((mean_return - risk_free_rate) / std_return) if std_return > 0 else float('inf')
-        else:
-            sharpe_ratio = 0.0
-
-
         # Printing Results
         logger.info(f"Number of Trades: {num_trades}")
         logger.info(f"Win Rate: {win_rate:.2f}%")
@@ -138,4 +122,3 @@ class CustomBrokerAdapter(BrokerTradePort):
         logger.info(f"Buy and Hold Return [%]: {perc_buy_hold_return:.2f}%")
         logger.info(f"Total Profit: ${total_profit:.2f}")
         logger.info(f"Initial Capital: ${self.current_balance:.2f}")
-        logger.info(f"Sharpe Ratio: {sharpe_ratio:.3f}")
