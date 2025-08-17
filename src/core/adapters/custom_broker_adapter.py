@@ -8,10 +8,11 @@ import pandas as pd
 
 class CustomBrokerAdapter(BrokerTradePort):
     def __init__(self, initial_cash: float):
-        self.current_balance = initial_cash
+        self._initial_balance = initial_cash
+        self.current_balance = self._initial_balance
         self.trades = []
         self.closed_trades = []
-        logger.info(f"Initialized CustomBrokerAdapter with starting cash: {self.current_balance}")
+        logger.info(f"Initialized CustomBrokerAdapter with starting cash: {self._initial_balance}")
 
     def buy(self, asset: Asset, quantity: int, price: float) -> None:
         if price is None:
