@@ -76,5 +76,9 @@ class IbBrokerAdapter(BrokerTradePort):
         self.ib_client.nextOrderId += 3
         return str(parent_id)
     
+    @property
+    def value(self):
+        return float(self.ib_client.account_summary["NetLiquidation"])
+
     def compute_stats(self):
-        pass
+        pass # No point in implementing this since IB TWS already gives us the metrics

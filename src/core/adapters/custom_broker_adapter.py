@@ -9,7 +9,7 @@ import pandas as pd
 class CustomBrokerAdapter(BrokerTradePort):
     def __init__(self, initial_cash: float):
         self._initial_balance = initial_cash
-        self.current_balance = self._initial_balance
+        self._current_balance = self._initial_balance
         self.trades = []
         self.closed_trades = []
         logger.info(f"Initialized CustomBrokerAdapter with starting cash: {self._initial_balance}")
@@ -20,7 +20,7 @@ class CustomBrokerAdapter(BrokerTradePort):
             raise ValueError("Asset must have a 'price' attribute for backtesting.")
 
         total_cost = price * quantity
-        if total_cost > self.current_balance:
+        if total_cost > self._current_balance:
             logger.warning(f"Buy failed: Insufficient funds to buy {quantity} of {asset.symbol} at ${price:.2f}")
             raise ValueError()
         
@@ -32,8 +32,8 @@ class CustomBrokerAdapter(BrokerTradePort):
             'status': 'OPEN'
         }
         self.trades.append(trade)
-        self.current_balance -= total_cost
-        logger.info(f"Executed BUY: {quantity}x {asset.symbol} at ${price:.2f} | Remaining Cash: ${self.current_balance:.2f}")
+        self._current_balance -= total_cost
+        logger.info(f"Executed BUY: {quantity}x {asset.symbol} at ${price:.2f} | Remaining Cash: ${self._current_balance:.2f}")
         return f"BUY-{len(self.trades)-1}"
 
     def sell(self, asset: Asset, quantity: int, price: float) -> str:
@@ -43,8 +43,8 @@ class CustomBrokerAdapter(BrokerTradePort):
                 trade['sell_quantity'] = quantity
                 trade['status'] = 'CLOSED'
                 self.closed_trades.append(trade)
-                self.current_balance += price * quantity
-                logger.info(f"Executed SELL: {quantity}x {asset.symbol} at ${price:.2f} | New Cash: ${self.current_balance:.2f}")
+                self._current_balance += price * quantity
+                logger.info(f"Executed SELL: {quantity}x {asset.symbol} at ${price:.2f} | New Cash: ${self._current_balance:.2f}")
 
         logger.warning(f"Sell failed: No open trade found for {asset.symbol}")
 
@@ -52,7 +52,7 @@ class CustomBrokerAdapter(BrokerTradePort):
                       take_profit: float, stop_loss: float, action: str) -> str:
         action = action.upper()
         if action == "BUY":
-            if entry_price * quantity > self.current_balance:
+            if entry_price * quantity > self._current_balance:
                 logger.warning(f"Bracket order failed: Insufficient funds to buy {quantity} of {asset.symbol}")
                 raise ValueError()
             trade = {
@@ -65,7 +65,7 @@ class CustomBrokerAdapter(BrokerTradePort):
                 'status': 'OPEN'
             }
             self.trades.append(trade)
-            self.current_balance -= entry_price * quantity
+            self._current_balance -= entry_price * quantity
             logger.info(f"Placed BUY_BRACKET for {asset.symbol}: Entry ${entry_price}, TP ${take_profit}, SL ${stop_loss}")
 
         elif action == "SELL":
@@ -79,7 +79,7 @@ class CustomBrokerAdapter(BrokerTradePort):
                 'status': 'OPEN'
             }
             self.trades.append(trade)
-            self.current_balance += entry_price * quantity
+            self._current_balance += entry_price * quantity
             logger.info(f"Placed SELL_BRACKET for {asset.symbol}: Entry ${entry_price}, TP ${take_profit}, SL ${stop_loss}")
 
         logger.error(f"Bracket order failed: Invalid action '{action}'")
@@ -93,17 +93,29 @@ class CustomBrokerAdapter(BrokerTradePort):
         logger.debug(f"Closed trades count: {len(self.closed_trades)}")
         return self.closed_trades
     
+    @property
+    def value(self):
+        # Start with current cash balance
+        total_value = self._current_balance
+        # Add value of open sell trades (liquid asset value)
+        for trade in self.trades:
+            if trade['type'] == 'SELL' and trade['status'] == 'OPEN':
+                # Use the most recent price for the asset
+                price = trade.get('sell_price', None)
+                quantity = trade.get('sell_quantity', trade.get('quantity', 0))
+                if price is not None:
+                    total_value += price * quantity
+        return total_value
+
     def compute_stats(self):
-        """
-        Log summary statistics about trades using the logger.
-        """
+
         closed_trades = [tr for tr in self.trades if tr['status'] == 'CLOSED']
         num_trades = len(closed_trades)
         num_wins = len([tr for tr in closed_trades if tr.get('sell_price', 0) > tr.get('buy_price', 0)])
         num_losses = num_trades - num_wins
-        total_profit = self.current_balance - self._initial_balance
+        total_profit = self._current_balance - self._initial_balance
         win_rate = (num_wins / num_trades) * 100.0 if num_trades > 0 else 0.0
-        perc_return = (total_profit * 100.0 / self.current_balance) if self.current_balance > 0 else 0.0
+        perc_return = (total_profit * 100.0 / self._current_balance) if self._current_balance > 0 else 0.0
 
         # Buy and Hold return rate
         if closed_trades:
@@ -121,4 +133,4 @@ class CustomBrokerAdapter(BrokerTradePort):
         logger.info(f"Return [%]: {perc_return:.2f}%")
         logger.info(f"Buy and Hold Return [%]: {perc_buy_hold_return:.2f}%")
         logger.info(f"Total Profit: ${total_profit:.2f}")
-        logger.info(f"Initial Capital: ${self.current_balance:.2f}")
+        logger.info(f"Initial Capital: ${self._current_balance:.2f}")

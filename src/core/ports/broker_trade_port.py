@@ -17,6 +17,11 @@ class BrokerTradePort(ABC):
     def bracket_order(self, asset: Asset, quantity: int, entry_price: float,
                       take_profit: float, stop_loss: float, action: str) -> str:
         pass
+    
+    @property
+    @abstractmethod
+    def value(self):
+        pass
 
     @abstractmethod
     def compute_stats(self) -> None:

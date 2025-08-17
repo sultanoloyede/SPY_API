@@ -1,6 +1,7 @@
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from ibapi.common import BarData as IB_BAR
+from ibapi.account_summary_tags import AccountSummaryTags
 from ibapi.contract import *
 from threading import Thread
 from src.core.models.bar import Bar
@@ -23,6 +24,7 @@ class IBApi(EWrapper, EClient):
             return
         EClient.__init__(self, self)
         self.nextOrderId = None
+        self.account_summary = {}
         self.order_id_ready = threading.Event()
         self.historical_data_buffer: Queue[Bar] = Queue()
         self.historical_data_done = threading.Event()
@@ -61,7 +63,12 @@ class IBApi(EWrapper, EClient):
         )
         self.historical_data_buffer.put(bar)
         logger.debug(f"Processed new bar: {bar}")
-        
+
+    def accountSummary(self, reqId, account, tag, value, currency):
+        self.account_summary[tag] = value
+
+    def accountSummaryEnd(self, reqId: int):
+        logger.debug(f"ANSWER accountSummaryEnd. Account Value: {self.account_summary["NetLiquidation"]}")
 
     def connect_and_run(self, host="127.0.0.1", port=7497, client_id=1):
         self.connect(host, port, client_id)
@@ -71,8 +78,10 @@ class IBApi(EWrapper, EClient):
         # Optional: Wait until connection is confirmed
         time.sleep(1)
         if self.isConnected():
-            self.connected_event = True
-            print("Connected to IB")
+            logger.info("Connected to IB")
+
+            self.reqAccountSummary(self.nextOrderId, "All", AccountSummaryTags.AllTags)
+        
         else:
-            print("Failed to connect to IB")
+            logger.error("Failed to connect to IB")
 

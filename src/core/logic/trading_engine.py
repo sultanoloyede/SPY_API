@@ -5,27 +5,37 @@ from src.core.models.bar import Bar
 from src.core.logic.strategy import Strategy
 
 import threading
-from typing import List
+from datetime import datetime
 
 import plotly as py
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 class TradingEngine:
-    def __init__(self, broker: BrokerTradePort, market_data: MarketDataPort, strategies: List[Strategy]):
+    def __init__(self, broker: BrokerTradePort, market_data: MarketDataPort, strategies: list[Strategy]):
         self.broker = broker
         self.market_data = market_data
-        self.strategies: List[Strategy] = strategies
-        self.bar_data:List[Bar] = []
+        self.strategies: list[Strategy] = strategies
+        self.bar_data:list[Bar] = []
+        self.portfolio_value: dict[datetime, int] = {}
 
     def run(self, asset: Asset, threaded: bool = True):
         def engine_loop():
             while True:
-                bar = self.market_data.next_bar(asset)  # Blocks until new bar is available in multithreaded applications
+
+                # Blocks until new bar is available in multithreaded applications
+                bar = self.market_data.next_bar(asset)
+                
+                # When market data is completed, compute statistics and end this function
                 if bar is None:
                     self.broker.compute_stats()
                     break
+
+                # Add bar to list data and update portfolio value
                 self.bar_data.append(bar)
+                self.portfolio_value[bar.timestamp] = self.broker.value
+
+                # Iterate over strategies to generate signals
                 for strategy in self.strategies:
                     strategy.evaluate(self.bar_data)
 
@@ -37,26 +47,47 @@ class TradingEngine:
             engine_loop()
 
     def generate_data_plot(self):
+        dates = [bar.timestamp for bar in self.bar_data]
+        opens = [bar.open for bar in self.bar_data]
+        highs = [bar.high for bar in self.bar_data]
+        lows = [bar.low for bar in self.bar_data]
+        closes = [bar.close for bar in self.bar_data]
 
-        dates = [bar.timestamp for bar in self.market_data._list_data]
-        opens = [bar.open for bar in self.market_data._list_data]
-        highs = [bar.high for bar in self.market_data._list_data]
-        lows = [bar.low for bar in self.market_data._list_data]
-        closes = [bar.close for bar in self.market_data._list_data]
+        equity_dates = list(self.portfolio_value.keys())
+        equity_values = list(self.portfolio_value.values())
 
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig = make_subplots(
+            rows=2, cols=1,
+            shared_xaxes=True,
+            vertical_spacing=0.1,
+            subplot_titles=[f"{self.market_data.asset} Price", "Account Equity"]
+        )
+
+        # Top: Candlestick chart
         fig.add_trace(go.Candlestick(
             x=dates,
             open=opens,
             high=highs,
             low=lows,
-            close=closes
-        ))
+            close=closes,
+            name="Asset Price"
+        ), row=1, col=1)
+
+        # Bottom: Equity curve
+        fig.add_trace(go.Scatter(
+            x=equity_dates,
+            y=equity_values,
+            mode="lines",
+            name="Account Equity",
+            line=dict(color="cyan", width=2)
+        ), row=2, col=1)
+
         fig.update_layout(
-            title=f"Historical Data - {self.market_data.asset}", 
-            xaxis_title="Date", 
-            yaxis_title=f"{self.market_data.asset} Price ({self.market_data.asset.currency})",
-            xaxis_rangeslider_visible=False,
-            template="plotly_dark"
-            )
+            title=f"Historical Data & Account Equity - {self.market_data.asset}",
+            xaxis_title="Date",
+            template="plotly_dark",
+            xaxis_rangeslider_visible=False
+        )
+        fig.update_yaxes(title_text=f"{self.market_data.asset} Price ({self.market_data.asset.currency})", row=1, col=1)
+        fig.update_yaxes(title_text=f"Account Equity ({self.market_data.asset.currency})", row=2, col=1)
         py.offline.plot(fig)

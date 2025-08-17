@@ -8,6 +8,7 @@ from ibapi.common import BarData as IBDATA
 from datetime import datetime
 from queue import Queue
 import pytz
+from ibapi.account_summary_tags import AccountSummaryTags
 
 class IbApiDataAdapter(MarketDataPort):
     def __init__(self, ib_client: IBApi):
@@ -98,4 +99,6 @@ class IbApiDataAdapter(MarketDataPort):
             )
     
     def next_bar(self, asset: Asset) -> Bar:
+        # Updated account balance asynchronously
+        self.ib_client.reqAccountSummary(self.ib_client.nextOrderId, "All", AccountSummaryTags.AllTags)
         return self.ib_client.historical_data_buffer.get()
