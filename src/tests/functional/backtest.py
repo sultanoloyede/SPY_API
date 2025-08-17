@@ -21,6 +21,6 @@ if __name__ == "__main__":
 
         trading_engine = TradingEngine(broker_adapter, market_adapter_iteration, [strategy])
         trading_engine.run(asset, threaded=False)
-        market_adapter_iteration.generate_data_plot()
+        trading_engine.generate_data_plot()
         broker_results.append(broker_adapter)
     pass

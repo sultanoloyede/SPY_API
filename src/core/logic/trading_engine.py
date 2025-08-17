@@ -3,8 +3,13 @@ from src.core.ports.market_data_port import MarketDataPort
 from src.core.models.asset import Asset
 from src.core.models.bar import Bar
 from src.core.logic.strategy import Strategy
+
 import threading
 from typing import List
+
+import plotly as py
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 class TradingEngine:
     def __init__(self, broker: BrokerTradePort, market_data: MarketDataPort, strategies: List[Strategy]):
@@ -31,3 +36,27 @@ class TradingEngine:
         else:
             engine_loop()
 
+    def generate_data_plot(self):
+
+        dates = [bar.timestamp for bar in self.market_data._list_data]
+        opens = [bar.open for bar in self.market_data._list_data]
+        highs = [bar.high for bar in self.market_data._list_data]
+        lows = [bar.low for bar in self.market_data._list_data]
+        closes = [bar.close for bar in self.market_data._list_data]
+
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_trace(go.Candlestick(
+            x=dates,
+            open=opens,
+            high=highs,
+            low=lows,
+            close=closes
+        ))
+        fig.update_layout(
+            title=f"Historical Data - {self.market_data.asset}", 
+            xaxis_title="Date", 
+            yaxis_title=f"{self.market_data.asset} Price ({self.market_data.asset.currency})",
+            xaxis_rangeslider_visible=False,
+            template="plotly_dark"
+            )
+        py.offline.plot(fig)
