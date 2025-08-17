@@ -8,10 +8,11 @@ import pandas as pd
 
 class CustomBrokerAdapter(BrokerTradePort):
     def __init__(self, initial_cash: float):
-        self.current_balance = initial_cash
+        self._initial_balance = initial_cash
+        self.current_balance = self._initial_balance
         self.trades = []
         self.closed_trades = []
-        logger.info(f"Initialized CustomBrokerAdapter with starting cash: {self.current_balance}")
+        logger.info(f"Initialized CustomBrokerAdapter with starting cash: {self._initial_balance}")
 
     def buy(self, asset: Asset, quantity: int, price: float) -> None:
         if price is None:
@@ -100,10 +101,11 @@ class CustomBrokerAdapter(BrokerTradePort):
         num_trades = len(closed_trades)
         num_wins = len([tr for tr in closed_trades if tr.get('sell_price', 0) > tr.get('buy_price', 0)])
         num_losses = num_trades - num_wins
-        total_profit = sum([(tr.get('sell_price', 0) - tr.get('buy_price', 0)) * tr.get('quantity', 1) for tr in closed_trades])
+        total_profit = self.current_balance - self._initial_balance
         win_rate = (num_wins / num_trades) * 100.0 if num_trades > 0 else 0.0
         perc_return = (total_profit * 100.0 / self.current_balance) if self.current_balance > 0 else 0.0
-        # Buy and hold calculation (simple version)
+
+        # Buy and Hold return rate
         if closed_trades:
             initial_buy = closed_trades[0].get('buy_price', 0)
             final_sell = closed_trades[-1].get('sell_price', 0)
