@@ -1,16 +1,16 @@
 import random
 from typing import List
 from dataclasses import replace
-from src.core.ports.market_data_port import MarketDataPort
+from src.core.adapters.yf_market_adapter import YFMarketDataAdapter
 from src.core.models.bar import Bar
 
 
 class MonteCarloPermutator:
 
-    def __init__(self, adapter: MarketDataPort, num_permutations: int = 100):
+    def __init__(self, adapter: YFMarketDataAdapter, num_permutations: int = 100):
         self.adapter = adapter
         self.num_permutations = num_permutations
-        self._permuted_adapters: List[MarketDataPort] = []
+        self._permuted_adapters: List[YFMarketDataAdapter] = []
         self._generate_permutations()
 
     def _generate_permutations(self):
@@ -58,5 +58,5 @@ class MonteCarloPermutator:
             self._permuted_adapters.append(adapter_instance)
 
     @property
-    def permuted_adapters(self) -> List[MarketDataPort]:
+    def permuted_adapters(self) -> List[YFMarketDataAdapter]:
         return self._permuted_adapters
