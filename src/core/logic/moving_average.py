@@ -53,14 +53,14 @@ class MovingAverageCrossoverStrategy(Strategy):
                 self.data_50_sma[-2] >= self.data_200_sma[-2]
                 ):
                 logger.info(f"Detected Death Cross of 50/200 bar SMA at {current_date}")
-                self.broker.sell(self.asset, 1, current_price)
+                self.broker.sell(self.asset, 100, current_price)
             elif (
                 len(self.data_50_sma) > 1 and len(self.data_200_sma) > 1 and
                 self.data_50_sma[-1] > self.data_200_sma[-1] and # Golden Crossing condition
                 self.data_50_sma[-2] <= self.data_200_sma[-2]
                 ):
                 logger.info(f"Detected Golden Cross of 50/200 bar SMA at {current_date}")
-                self.broker.buy(self.asset, 1, current_price)
+                self.broker.buy(self.asset, 100, current_price)
             else:
                 pass
         else:

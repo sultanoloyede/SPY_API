@@ -13,6 +13,7 @@ from ibapi.account_summary_tags import AccountSummaryTags
 class IbApiDataAdapter(MarketDataPort):
     def __init__(self, ib_client: IBApi):
         self.ib_client = ib_client
+        self._list_data: list[Bar] = []
 
     def _create_contract(self, asset: Asset) -> Contract:
         if asset.asset_type == AssetType.FOREX:
@@ -102,8 +103,8 @@ class IbApiDataAdapter(MarketDataPort):
     
     @property
     def current_bar(self) -> Bar:
-        return self.current_bar
+        return self._list_data[-1]
 
     def next_bar(self, asset: Asset) -> Bar:
-        self._current_bar =  self.ib_client.historical_data_buffer.get()
-        return self._current_bar
+        self._list_data.append(self.ib_client.historical_data_buffer.get())
+        return self._list_data[-1]

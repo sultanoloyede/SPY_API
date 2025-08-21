@@ -1,8 +1,10 @@
+from src.utils.logger import logger
 from src.core.ports.broker_trade_port import BrokerTradePort
 from src.core.ports.market_data_port import MarketDataPort
 from src.core.models.asset import Asset
 from src.core.models.bar import Bar
 from src.core.logic.strategy import Strategy
+from src.utils.config import RISK_FREE_RATE
 
 import threading
 from datetime import datetime
@@ -56,6 +58,32 @@ class TradingEngine:
         equity_dates = list(self.portfolio_value.keys())
         equity_values = list(self.portfolio_value.values())
 
+        # Compute daily returns from equity curve manually
+        returns = []
+        for i in range(1, len(equity_values)):
+            prev = equity_values[i - 1]
+            curr = equity_values[i]
+            if prev != 0:
+                returns.append((curr - prev) / prev)
+            else:
+                returns.append(0.0)
+
+        # Mean return
+        mean_return = sum(returns) / len(returns) if returns else 0.0
+
+        # Standard deviation
+        std_return = 0.0
+        if returns:
+            mean = mean_return
+            variance = sum((r - mean) ** 2 for r in returns) / len(returns)
+            std_return = variance ** 0.5
+
+        sharpe_ratio = 0.0
+        if std_return > 0:
+            sharpe_ratio = (mean_return - RISK_FREE_RATE) / std_return
+
+        logger.info(f"Sharpe Ratio: {sharpe_ratio:.4f}")
+
         fig = make_subplots(
             rows=2, cols=1,
             shared_xaxes=True,
@@ -83,7 +111,7 @@ class TradingEngine:
         ), row=2, col=1)
 
         fig.update_layout(
-            title=f"Historical Data & Account Equity - {self.market_data.asset}",
+            title=f"Historical Data & Account Equity - {self.market_data.asset} | Sharpe Ratio: {sharpe_ratio:.4f}",
             xaxis_title="Date",
             template="plotly_dark",
             xaxis_rangeslider_visible=False

@@ -13,10 +13,10 @@ if __name__ == "__main__":
     market_data_adapter.request_historical_data(asset, datetime.today()-timedelta(365*4), datetime.today())
     
     # Create the Monte Carlo Permutated objects
-    permutator = MonteCarloPermutator(market_data_adapter, 10)
+    permutator = MonteCarloPermutator(market_data_adapter, 1)
     broker_results: list[CustomBrokerAdapter] = []
     for market_adapter_iteration in permutator.permuted_adapters:
-        broker_adapter = CustomBrokerAdapter(10000)
+        broker_adapter = CustomBrokerAdapter(200, market_adapter_iteration)
         strategy = MovingAverageCrossoverStrategy(broker_adapter, asset)
 
         trading_engine = TradingEngine(broker_adapter, market_adapter_iteration, [strategy])
