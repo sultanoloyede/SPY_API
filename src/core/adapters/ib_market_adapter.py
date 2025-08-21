@@ -98,7 +98,12 @@ class IbApiDataAdapter(MarketDataPort):
                 chartOptions=[]
             )
     
+    @property
+    def current_bar(self) -> Bar:
+        return self.current_bar
+
     def next_bar(self, asset: Asset) -> Bar:
         # Updated account balance asynchronously
         self.ib_client.reqAccountSummary(self.ib_client.nextOrderId, "All", AccountSummaryTags.AllTags)
-        return self.ib_client.historical_data_buffer.get()
+        self._current_bar =  self.ib_client.historical_data_buffer.get()
+        return self._current_bar

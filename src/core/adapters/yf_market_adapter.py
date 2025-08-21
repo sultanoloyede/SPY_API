@@ -15,6 +15,11 @@ class YFMarketDataAdapter(MarketDataPort):
         self._list_data:list[Bar] = []
         self._counter: int = 0
 
+    @property
+    def current_bar(self):
+        capped_last_bar_idx: int = min(self._counter, len(self._list_data))
+        return self._list_data[capped_last_bar_idx]
+
     def next_bar(self, asset: Asset) -> Bar:
         if len(self._list_data) > self._counter:
             bar = self._list_data[self._counter]

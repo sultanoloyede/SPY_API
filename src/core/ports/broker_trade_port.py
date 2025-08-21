@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
+
+from src.core.models.bar import Bar
 from src.core.models.asset import Asset
 
 
