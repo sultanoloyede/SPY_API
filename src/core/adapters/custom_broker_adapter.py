@@ -114,9 +114,9 @@ class CustomBrokerAdapter(BrokerTradePort):
         num_trades = len(closed_trades)
         num_wins = len([trade for trade in closed_trades if trade.get('sell_price', 0) > trade.get('buy_price', 0)])
         num_losses = num_trades - num_wins
-        total_profit = self._current_balance - self._initial_balance
+        total_profit = self.value - self._initial_balance
         win_rate = (num_wins / num_trades) * 100.0 if num_trades > 0 else 0.0
-        perc_return = (total_profit * 100.0 / self._current_balance) if self._current_balance > 0 else 0.0
+        perc_return = (total_profit * 100.0 / self._initial_balance) if self.value > 0 else 0.0
 
         # Buy and Hold return rate
         if closed_trades:
