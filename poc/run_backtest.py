@@ -6,12 +6,16 @@ from poc.config import START_DATE, END_DATE
 
 def main():
     pair = "EUR/USD"
-    data = get_forex_data(pair, output_size=1000)
+    data = get_forex_data(pair, output_size=1500)
+
+    strategy = MAStrategy(short_window=50, long_window=200)
+
+    compare_to_baseline(data, strategy, name="MAStrategy", start_date=START_DATE, end_date=END_DATE)
 
     # Initialize your strategy
-    strategy = RSIStrategy(rsi_period=14, oversold_threshold=30, overbought_threshold=70)
+    # strategy = RSIStrategy(rsi_period=14, oversold_threshold=30, overbought_threshold=70)
 
-    compare_to_baseline(data, strategy, name="RSIStrategy", start_date=START_DATE, end_date=END_DATE)
+    # compare_to_baseline(data, strategy, name="RSIStrategy", start_date=START_DATE, end_date=END_DATE)
 
 if __name__ == "__main__":
     main()

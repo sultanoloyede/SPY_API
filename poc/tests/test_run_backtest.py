@@ -3,7 +3,7 @@ import pandas as pd
 from unittest.mock import patch
 from poc.run_backtest import main
 
-def generate_mock_data(n=500):
+def generate_mock_data(n=1000):
     return pd.DataFrame({
         "datetime": pd.date_range("2024-01-01", periods=n, freq="h"),
         "open": [1.0] * n,

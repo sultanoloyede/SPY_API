@@ -32,12 +32,14 @@ class Backtester:
                 df, entry_time, entry_price, direction
             )
 
-            # 🔔 Log each trade to terminal
             self.log_trade(
                 trade_datetime=exit_time,
                 result=(1 if result == "win" else 0),
-                units=pips / self.pip_unit
+                units=pips / self.pip_unit,
+                direction=direction,
+                entry_price=entry_price
             )
+
 
             results.append(TradeResult(
                 entry_time=entry_time,
@@ -112,6 +114,9 @@ class Backtester:
 
         return round(mean_return / std_return, 2)
 
-    def log_trade(self, trade_datetime, result, units):
+    def log_trade(self, trade_datetime, result, units, direction, entry_price):
         result_str = "WIN" if result == 1 else "LOSS"
-        print(f"[{trade_datetime}] → {result_str} | Units: {'+' if result == 1 else '-'}{abs(units)}")
+        unit_str = f"{'+' if result == 1 else '-'}{abs(units)}"
+        print(f"[{trade_datetime}] → {result_str} | {direction.upper()} | Entry: {entry_price:.5f} | Units: {unit_str}")
+
+

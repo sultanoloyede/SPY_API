@@ -19,7 +19,7 @@ def test_backtester_runs_and_returns_correct_structure():
     strategy = RandomBaseline()
     backtester = Backtester(strategy, data)
 
-    # Mock log_trade so we don't print during test
+    # Mock log_trade to avoid printing and capture calls
     backtester.log_trade = MagicMock()
 
     result = backtester.run()
@@ -46,19 +46,18 @@ def test_backtester_runs_and_returns_correct_structure():
         assert trade.direction in ["buy", "sell"]
         assert isinstance(trade.pips, (int, float))
 
-    # Ensure log_trade was called once per trade
     assert backtester.log_trade.call_count == result["count"]
 
-    # ✅ Sample call check (using keyword arguments)
     for call in backtester.log_trade.call_args_list:
-        print(call)
-
         kwargs = call.kwargs
         assert "trade_datetime" in kwargs
         assert "result" in kwargs
         assert "units" in kwargs
+        assert "direction" in kwargs
+        assert "entry_price" in kwargs  # ✅ new check
 
         assert isinstance(kwargs["trade_datetime"], pd.Timestamp)
         assert kwargs["result"] in [0, 1]
         assert isinstance(kwargs["units"], float)
-
+        assert kwargs["direction"] in ["buy", "sell"]
+        assert isinstance(kwargs["entry_price"], (float, int))  # ✅ new check
