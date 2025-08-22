@@ -260,7 +260,7 @@ This supports the idea of inserting a **risk stop loss around 0.6%**, to filter 
 Here we evaluate average monthly profit across the full backtest period:
 
 - The system shows **clearly cyclical performance**.
-- Some months (March, June, September, December) display recurring losses, while others (February, April, July) are consistently profitable.
+- Some months (Janarury, June, December) display recurring losses, while others (February, March, May, July) are consistently profitable.
 
 This analysis suggests that **monthly filters or volatility regimes** could further enhance the system — e.g., disabling trading in historically poor-performing months or adjusting position sizing based on seasonal volatility.
 
