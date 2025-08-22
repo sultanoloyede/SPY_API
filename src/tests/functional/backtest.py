@@ -3,6 +3,7 @@ from src.core.adapters.yf_market_adapter import YFMarketDataAdapter
 from src.core.logic.moving_average import MovingAverageCrossoverStrategy
 from src.core.adapters.custom_broker_adapter import CustomBrokerAdapter
 from src.core.logic.monte_carlo_permutator import MonteCarloPermutator
+from src.core.adapters.plotly_plotter_adapter import PlotlyResultPlotterAdapter
 from src.core.models.bar import Bar
 from src.core.models.asset import Asset, AssetType
 from datetime import datetime, timedelta
@@ -21,6 +22,8 @@ if __name__ == "__main__":
 
         trading_engine = TradingEngine(broker_adapter, market_adapter_iteration, [strategy])
         trading_engine.run(asset, threaded=False)
-        trading_engine.generate_data_plot()
+        PlotlyResultPlotterAdapter.plot(trading_engine.bar_data, trading_engine.portfolio_value, asset, asset.currency)
         broker_results.append(broker_adapter)
+
+
     pass
