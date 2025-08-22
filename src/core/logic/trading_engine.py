@@ -48,12 +48,8 @@ class TradingEngine:
         else:
             engine_loop()
 
-    def generate_data_plot(self):
-        dates = [bar.timestamp for bar in self.bar_data]
-        opens = [bar.open for bar in self.bar_data]
-        highs = [bar.high for bar in self.bar_data]
-        lows = [bar.low for bar in self.bar_data]
-        closes = [bar.close for bar in self.bar_data]
+    @property
+    def sharpe_ratio(self) -> float:
 
         equity_dates = list(self.portfolio_value.keys())
         equity_values = list(self.portfolio_value.values())
@@ -82,7 +78,18 @@ class TradingEngine:
         if std_return > 0:
             sharpe_ratio = (mean_return - RISK_FREE_RATE) / std_return
 
-        logger.info(f"Sharpe Ratio: {sharpe_ratio:.4f}")
+        return sharpe_ratio
+
+
+    def generate_data_plot(self):
+        dates = [bar.timestamp for bar in self.bar_data]
+        opens = [bar.open for bar in self.bar_data]
+        highs = [bar.high for bar in self.bar_data]
+        lows = [bar.low for bar in self.bar_data]
+        closes = [bar.close for bar in self.bar_data]
+
+        equity_dates = list(self.portfolio_value.keys())
+        equity_values = list(self.portfolio_value.values())
 
         fig = make_subplots(
             rows=2, cols=1,
@@ -111,7 +118,7 @@ class TradingEngine:
         ), row=2, col=1)
 
         fig.update_layout(
-            title=f"Historical Data & Account Equity - {self.market_data.asset} | Sharpe Ratio: {sharpe_ratio:.4f}",
+            title=f"Historical Data & Account Equity - {self.market_data.asset} | Sharpe Ratio: {self.sharpe_ratio:.4f}",
             xaxis_title="Date",
             template="plotly_dark",
             xaxis_rangeslider_visible=False
