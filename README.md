@@ -1,4 +1,4 @@
-# Black Wealth Systems
+# Onyx Trading Engine
 
 A modular and extensible trading strategy creation platform built with scalable design patterns, supporting live trading (Interactive Brokers) and backtesting (custom/Yahoo adapters) for stocks, forex, and more.
 
