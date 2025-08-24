@@ -5,6 +5,13 @@ from datetime import datetime
 
 class MarketDataPort(ABC):
 
+    _current_bar: Bar = None
+
+    @property
+    @abstractmethod
+    def current_bar(self) -> Bar:
+        pass
+    
     @abstractmethod
     def next_bar(self, asset: Asset) -> Bar:
         pass

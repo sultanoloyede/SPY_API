@@ -8,10 +8,12 @@ from ibapi.common import BarData as IBDATA
 from datetime import datetime
 from queue import Queue
 import pytz
+from ibapi.account_summary_tags import AccountSummaryTags
 
 class IbApiDataAdapter(MarketDataPort):
     def __init__(self, ib_client: IBApi):
         self.ib_client = ib_client
+        self._list_data: list[Bar] = []
 
     def _create_contract(self, asset: Asset) -> Contract:
         if asset.asset_type == AssetType.FOREX:
@@ -96,6 +98,13 @@ class IbApiDataAdapter(MarketDataPort):
                 keepUpToDate=True,
                 chartOptions=[]
             )
+            # Updated account balance asynchronously
+            self.ib_client.reqAccountSummary(self.ib_client.nextOrderId, "All", AccountSummaryTags.AllTags)
     
+    @property
+    def current_bar(self) -> Bar:
+        return self._list_data[-1]
+
     def next_bar(self, asset: Asset) -> Bar:
-        return self.ib_client.historical_data_buffer.get()
+        self._list_data.append(self.ib_client.historical_data_buffer.get())
+        return self._list_data[-1]
