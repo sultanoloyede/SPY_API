@@ -56,6 +56,8 @@ Candlestick charts with buy/sell markers are generated for backtest results.
 ## Authors
 - [Josue Dazogbo](https://github.com/JDazogbo)
 - [Sultan Oloyede](https://github.com/sultanoloyede)
+- [Jedidiah Ange-Emmanuel Kouakou](https://github.com/ARelaxedScholar)
+- [Racine Kane](https://github.com/Racine-04)
 
 ## Resources
 - [System Architecture](Resources/Design/SystemArchitecture.md)
