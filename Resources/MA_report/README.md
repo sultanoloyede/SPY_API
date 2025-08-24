@@ -278,3 +278,10 @@ Despite this system showing **significant improvements** over its initial form, 
 As with any trading system, **performance is not static**. This review phase illustrates the importance of iterative analysis — ensuring a strategy not only performs in backtests but continues to adapt and refine based on deeper behavioral insights.
 
 > In trading system development: testing is just the beginning — **understanding trade behavior is how you evolve it.**
+
+
+## Citation
+
+Reference
+
+Jaekle, U., & Tomasini, E. (2020). Trading Systems: A New Approach to System Development and Portfolio Optimisation (2nd ed.). Harriman House.
