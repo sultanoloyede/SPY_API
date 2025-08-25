@@ -11,8 +11,8 @@ from src.core.logic.trading_engine import TradingEngine
 from src.core.logic.moving_average import MovingAverageCrossoverStrategy
 
 # Adapters
-from src.core.adapters.ib_market_adapter import IbApiDataAdapter
-from src.core.adapters.ib_broker_adapter import IbBrokerAdapter
+from core.adapters.market_data.ib_market_adapter import IbApiDataAdapter
+from core.adapters.broker_trade.ib_broker_adapter import IbBrokerAdapter
 
 
 if __name__ == "__main__":
